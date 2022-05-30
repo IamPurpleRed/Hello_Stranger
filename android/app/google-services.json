@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "778842234031",
+    "project_id": "pr-hello-stranger",
+    "storage_bucket": "pr-hello-stranger.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:778842234031:android:82d1b7d54fc0c96116485a",
+        "android_client_info": {
+          "package_name": "com.purplered.hello_stranger"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "778842234031-apidtau8dqv4d2p8ghiq242iec5mct5f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC68biGVfFeITOBtDoWaVyfqo0PT_OTkvQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "778842234031-apidtau8dqv4d2p8ghiq242iec5mct5f.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "778842234031-nnurmu5smn1vt7006bcouggp5s279h5d.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.purplered.helloStranger"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
