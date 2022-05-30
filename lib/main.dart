@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+import '/config/constants.dart';
+import '/config/palette.dart';
 import '/firebase_options.dart';
+import '/screens/enroll_page.dart';
 import '/screens/login_page.dart';
 
 void main() async {
@@ -20,10 +23,30 @@ class HelloStranger extends StatelessWidget {
     return MaterialApp(
       title: 'Hello Stranger',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primaryColor: Palette.primaryColor,
+        scaffoldBackgroundColor: Palette.backgroundColor,
+        buttonTheme: ButtonThemeData(
+          buttonColor: Palette.secondaryColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          hintStyle: const TextStyle(color: Colors.grey, fontSize: Constants.textFieldFontSize),
+          contentPadding: const EdgeInsets.all(6.0),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey[300]!),
+            borderRadius: BorderRadius.circular(35.0),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Palette.secondaryColor),
+            borderRadius: BorderRadius.circular(35.0),
+          ),
+        ),
       ),
       initialRoute: '/login',
-      routes: {'/login': (context) => LoginPage()},
+      routes: {
+        '/login': (context) => LoginPage(),
+        '/enroll': (context) => EnrollPage(),
+      },
     );
   }
 }

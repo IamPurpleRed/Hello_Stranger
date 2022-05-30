@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '/config/constants.dart';
 import '/config/palette.dart';
 
 class LoginPage extends StatefulWidget {
@@ -18,7 +19,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   PackageInfo? packageInfo;
-  bool isPhoneInputArea = true; // 當前是否正在顯示 phoneInputArea
+  bool isPhoneInputArea = true; // 若為 true 則顯示手機輸入介面，false 則顯示驗證碼輸入介面
   bool isWorking = false; // 是否讓 button 顯示載入動畫
   String verificationId = ''; // 當使用者成功送出手機號碼後，將會從 Firebase 取得
 
@@ -41,6 +42,7 @@ class _LoginPageState extends State<LoginPage> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).requestFocus(FocusNode()), // 點擊螢幕任一處以轉移焦點
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         body: Stack(
           children: [
             Container(
@@ -48,21 +50,30 @@ class _LoginPageState extends State<LoginPage> {
               height: vh,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF0ED2F7), Color(0xFFB2FEFA)],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+                  colors: [Palette.primaryColor, Palette.primaryGradientColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
               ),
             ),
             Positioned(
-              top: vh * 0.4,
+              top: vh * 0.15,
+              left: (vw - vh * 0.15) / 2,
+              child: SizedBox(
+                width: vh * 0.15,
+                height: vh * 0.15,
+                child: Image.asset('assets/app_logo_foreground.png'),
+              ),
+            ),
+            Positioned(
+              top: vh * 0.32,
               left: vw * 0.1,
               child: Container(
                 width: vw * 0.8,
                 height: vh * 0.35,
-                padding: const EdgeInsets.all(20.0),
+                padding: const EdgeInsets.all(25.0),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFFFFF),
+                  color: Palette.backgroundColor,
                   borderRadius: BorderRadius.circular(15.0),
                 ),
                 child: isPhoneInputArea ? phoneInputArea() : otpInputArea(),
@@ -84,49 +95,46 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  /* INFO: 輸入格 */
-  Padding textfield({required Icon prefixIcon, required String fieldName, required TextInputType keyboardType, required TextEditingController controller, required int maxLength}) {
-    const double fontSize = 18.0;
-
-    return Padding(
-      padding: const EdgeInsets.all(6.0),
-      child: TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        inputFormatters: [LengthLimitingTextInputFormatter(maxLength)],
-        style: const TextStyle(fontSize: fontSize),
-        decoration: InputDecoration(
-          hintText: fieldName,
-          hintStyle: const TextStyle(color: Colors.grey, fontSize: fontSize),
-          contentPadding: const EdgeInsets.all(6.0),
-          prefixIcon: prefixIcon,
-          enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey[300]!),
-            borderRadius: BorderRadius.circular(35.0),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Palette.secondaryColor),
-            borderRadius: BorderRadius.circular(35.0),
-          ),
-        ),
-      ),
-    );
-  }
-
   /* INFO: 手機輸入介面 */
   Column phoneInputArea() {
     return Column(
       children: [
-        textfield(
-          prefixIcon: const Icon(Icons.phone_android),
-          fieldName: '手機號碼',
-          controller: widget.phoneController,
-          keyboardType: TextInputType.number,
-          maxLength: 10,
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 15.0),
+          child: Text(
+            'Welcome Back !',
+            style: TextStyle(fontSize: 32.0, fontWeight: FontWeight.bold),
+          ),
         ),
-        TextButton(
-          onPressed: verifyPhone,
-          child: isWorking ? const SpinKitThreeBounce(color: Colors.white, size: 18.0) : Container(child: const Text('送出')),
+        const Text(
+          '一支手機號碼，即可使用所有功能！',
+          style: TextStyle(fontSize: 16.0),
+        ),
+        const SizedBox(height: 15.0),
+        Expanded(
+          child: TextField(
+            enabled: !isWorking,
+            controller: widget.phoneController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(10),
+            ],
+            style: const TextStyle(fontSize: Constants.textFieldFontSize),
+            decoration: const InputDecoration(
+              hintText: '手機號碼',
+              prefixIcon: Icon(Icons.phone_android),
+            ),
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            ElevatedButton(
+              onPressed: isWorking ? () {} : verifyPhone,
+              child: isWorking ? const SpinKitThreeBounce(color: Colors.white, size: 18.0) : const Text('送出', style: TextStyle(color: Colors.white)),
+            ),
+          ],
         ),
       ],
     );
@@ -141,15 +149,19 @@ class _LoginPageState extends State<LoginPage> {
       phoneNumber: '+886${widget.phoneController.text.substring(1)}',
       timeout: const Duration(seconds: 60),
       verificationCompleted: (PhoneAuthCredential credential) async {
-        await FirebaseAuth.instance.signInWithCredential(credential);
-        if (FirebaseAuth.instance.currentUser == null) {
-          print('login failed.');
-        } else {
-          print('login successful.');
-        }
         setState(() {
-          isWorking = false;
+          isWorking = true;
         });
+        await FirebaseAuth.instance.signInWithCredential(credential);
+        if (FirebaseAuth.instance.currentUser != null) {
+          setState(() {
+            Navigator.pushReplacementNamed(context, '/enroll');
+          });
+        } else {
+          setState(() {
+            isWorking = false;
+          });
+        }
       },
       verificationFailed: (FirebaseAuthException e) {
         if (e.code == 'invalid-phone-number') {
@@ -176,16 +188,23 @@ class _LoginPageState extends State<LoginPage> {
   Column otpInputArea() {
     return Column(
       children: [
-        textfield(
-          prefixIcon: const Icon(Icons.phone_android),
-          fieldName: '驗證碼',
+        TextField(
+          enabled: !isWorking,
           controller: widget.otpController,
           keyboardType: TextInputType.number,
-          maxLength: 6,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(6),
+          ],
+          style: const TextStyle(fontSize: Constants.textFieldFontSize),
+          decoration: const InputDecoration(
+            hintText: '驗證碼',
+            prefixIcon: Icon(Icons.vpn_key),
+          ),
         ),
-        TextButton(
-          onPressed: verifyOTP,
-          child: isWorking ? const SpinKitThreeBounce(color: Colors.white, size: 18.0) : Container(child: const Text('送出')),
+        ElevatedButton(
+          onPressed: isWorking ? () {} : verifyOTP,
+          child: isWorking ? const SpinKitThreeBounce(color: Colors.white, size: 18.0) : const Text('送出', style: TextStyle(color: Colors.white)),
         ),
       ],
     );
@@ -198,13 +217,14 @@ class _LoginPageState extends State<LoginPage> {
     });
     PhoneAuthCredential credential = PhoneAuthProvider.credential(verificationId: verificationId, smsCode: widget.otpController.text);
     await FirebaseAuth.instance.signInWithCredential(credential);
-    if (FirebaseAuth.instance.currentUser == null) {
-      print('login failed.');
+    if (FirebaseAuth.instance.currentUser != null) {
+      setState(() {
+        Navigator.pushReplacementNamed(context, '/enroll');
+      });
     } else {
-      print('login successful.');
+      setState(() {
+        isWorking = false;
+      });
     }
-    setState(() {
-      isWorking = false;
-    });
   }
 }
