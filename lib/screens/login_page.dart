@@ -134,18 +134,22 @@ class _LoginPageState extends State<LoginPage> {
 
   /* INFO: 拿手機號碼跟 Firebase 溝通 */
   void verifyPhone() async {
-    isWorking = true;
+    setState(() {
+      isWorking = true;
+    });
     await FirebaseAuth.instance.verifyPhoneNumber(
       phoneNumber: '+886${widget.phoneController.text.substring(1)}',
+      timeout: const Duration(seconds: 60),
       verificationCompleted: (PhoneAuthCredential credential) async {
-        await FirebaseAuth.instance.signInWithCredential(credential).then((value) {
-          if (FirebaseAuth.instance.currentUser == null) {
-            print('login failed.');
-          } else {
-            print('login successful.');
-          }
+        await FirebaseAuth.instance.signInWithCredential(credential);
+        if (FirebaseAuth.instance.currentUser == null) {
+          print('login failed.');
+        } else {
+          print('login successful.');
+        }
+        setState(() {
+          isWorking = false;
         });
-        ;
       },
       verificationFailed: (FirebaseAuthException e) {
         if (e.code == 'invalid-phone-number') {
@@ -153,12 +157,16 @@ class _LoginPageState extends State<LoginPage> {
         } else {
           print('other error.');
         }
+        setState(() {
+          isWorking = false;
+        });
       },
       codeSent: (String id, int? resendToken) {
-        isWorking = false;
-        verificationId = id;
-        isPhoneInputArea = false; // 跳轉至 OTP 驗證畫面
-        setState(() {});
+        setState(() {
+          isWorking = false;
+          verificationId = id;
+          isPhoneInputArea = false; // 跳轉至 OTP 驗證畫面
+        });
       },
       codeAutoRetrievalTimeout: (String verificationId) {},
     );
@@ -166,7 +174,6 @@ class _LoginPageState extends State<LoginPage> {
 
   /* INFO: OTP 輸入介面 */
   Column otpInputArea() {
-    isWorking = true;
     return Column(
       children: [
         textfield(
@@ -186,13 +193,18 @@ class _LoginPageState extends State<LoginPage> {
 
   /* INFO: 拿 OTP 跟 Firebase 溝通 */
   void verifyOTP() async {
+    setState(() {
+      isWorking = true;
+    });
     PhoneAuthCredential credential = PhoneAuthProvider.credential(verificationId: verificationId, smsCode: widget.otpController.text);
-    await FirebaseAuth.instance.signInWithCredential(credential).then((value) {
-      if (FirebaseAuth.instance.currentUser == null) {
-        print('login failed.');
-      } else {
-        print('login successful.');
-      }
+    await FirebaseAuth.instance.signInWithCredential(credential);
+    if (FirebaseAuth.instance.currentUser == null) {
+      print('login failed.');
+    } else {
+      print('login successful.');
+    }
+    setState(() {
+      isWorking = false;
     });
   }
 }
