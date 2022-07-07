@@ -63,6 +63,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '778842234031',
     projectId: 'pr-hello-stranger',
     storageBucket: 'pr-hello-stranger.appspot.com',
+    androidClientId: '778842234031-f90m5au46sjct7qki5a9f3ae9ro09i0l.apps.googleusercontent.com',
     iosClientId: '778842234031-nnurmu5smn1vt7006bcouggp5s279h5d.apps.googleusercontent.com',
     iosBundleId: 'com.purplered.helloStranger',
   );
