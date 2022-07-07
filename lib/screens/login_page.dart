@@ -1,11 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '/config/constants.dart';
 import '/config/palette.dart';
+import '/components/widgets.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key? key}) : super(key: key);
@@ -129,12 +129,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            ElevatedButton(
-              onPressed: isWorking ? () {} : verifyPhone,
-              child: isWorking ? const SpinKitThreeBounce(color: Colors.white, size: 18.0) : const Text('送出', style: TextStyle(color: Colors.white)),
-            ),
-          ],
+          children: [Widgets.loginButton(isWorking, verifyPhone)],
         ),
       ],
     );
@@ -202,10 +197,7 @@ class _LoginPageState extends State<LoginPage> {
             prefixIcon: Icon(Icons.vpn_key),
           ),
         ),
-        ElevatedButton(
-          onPressed: isWorking ? () {} : verifyOTP,
-          child: isWorking ? const SpinKitThreeBounce(color: Colors.white, size: 18.0) : const Text('送出', style: TextStyle(color: Colors.white)),
-        ),
+        Widgets.loginButton(isWorking, verifyOTP),
       ],
     );
   }

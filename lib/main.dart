@@ -27,10 +27,15 @@ class HelloStranger extends StatelessWidget {
         scaffoldBackgroundColor: Palette.backgroundColor,
         buttonTheme: ButtonThemeData(
           buttonColor: Palette.secondaryColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
         ),
         inputDecorationTheme: InputDecorationTheme(
-          hintStyle: const TextStyle(color: Colors.grey, fontSize: Constants.textFieldFontSize),
+          hintStyle: const TextStyle(
+            color: Colors.grey,
+            fontSize: Constants.textFieldFontSize,
+          ),
           contentPadding: const EdgeInsets.all(6.0),
           enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(color: Colors.grey[300]!),
@@ -45,7 +50,7 @@ class HelloStranger extends StatelessWidget {
       initialRoute: '/login',
       routes: {
         '/login': (context) => LoginPage(),
-        '/enroll': (context) => EnrollPage(),
+        '/enroll': (context) => const EnrollPage(),
       },
     );
   }
