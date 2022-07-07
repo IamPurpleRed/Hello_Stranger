@@ -100,17 +100,17 @@ class _LoginPageState extends State<LoginPage> {
     return Column(
       children: [
         const Padding(
-          padding: EdgeInsets.symmetric(vertical: 15.0),
+          padding: EdgeInsets.only(bottom: 10.0),
           child: Text(
             'Welcome Back !',
             style: TextStyle(fontSize: 32.0, fontWeight: FontWeight.bold),
           ),
         ),
         const Text(
-          '一支手機號碼，即可使用所有功能！',
+          '一支手機號碼，即可使用所有功能',
           style: TextStyle(fontSize: 16.0),
         ),
-        const SizedBox(height: 15.0),
+        const SizedBox(height: 30.0),
         Expanded(
           child: TextField(
             enabled: !isWorking,
@@ -142,27 +142,25 @@ class _LoginPageState extends State<LoginPage> {
     });
     await FirebaseAuth.instance.verifyPhoneNumber(
       phoneNumber: '+886${widget.phoneController.text.substring(1)}',
-      timeout: const Duration(seconds: 60),
       verificationCompleted: (PhoneAuthCredential credential) async {
-        setState(() {
-          isWorking = true;
-        });
         await FirebaseAuth.instance.signInWithCredential(credential);
-        if (FirebaseAuth.instance.currentUser != null) {
-          setState(() {
-            Navigator.pushReplacementNamed(context, '/enroll');
-          });
-        } else {
-          setState(() {
-            isWorking = false;
-          });
-        }
+        setState(() {
+          Navigator.pushReplacementNamed(context, '/enroll');
+        });
       },
       verificationFailed: (FirebaseAuthException e) {
         if (e.code == 'invalid-phone-number') {
-          print('The provided phone number is not valid.');
+          Widgets.dialog(
+            context,
+            title: '無法傳送認證簡訊',
+            content: '您輸入的手機號碼格式有誤，請重新輸入！',
+          );
         } else {
-          print('other error.');
+          Widgets.dialog(
+            context,
+            title: '發生錯誤',
+            content: '${e.code}: ${e.message}',
+          );
         }
         setState(() {
           isWorking = false;
@@ -209,14 +207,8 @@ class _LoginPageState extends State<LoginPage> {
     });
     PhoneAuthCredential credential = PhoneAuthProvider.credential(verificationId: verificationId, smsCode: widget.otpController.text);
     await FirebaseAuth.instance.signInWithCredential(credential);
-    if (FirebaseAuth.instance.currentUser != null) {
-      setState(() {
-        Navigator.pushReplacementNamed(context, '/enroll');
-      });
-    } else {
-      setState(() {
-        isWorking = false;
-      });
-    }
+    setState(() {
+      Navigator.pushReplacementNamed(context, '/enroll');
+    });
   }
 }

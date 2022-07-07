@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '/config/constants.dart';
 import '/config/palette.dart';
@@ -9,6 +10,10 @@ import '/screens/login_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]); // 鎖定螢幕方向只能為垂直(網頁版不會鎖定)
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
