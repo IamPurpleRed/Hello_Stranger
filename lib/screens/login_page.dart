@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
 
 import '/config/constants.dart';
 import '/config/palette.dart';
@@ -11,7 +12,6 @@ class LoginPage extends StatefulWidget {
   LoginPage({Key? key}) : super(key: key);
 
   final phoneController = TextEditingController();
-  final otpController = TextEditingController();
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -22,6 +22,7 @@ class _LoginPageState extends State<LoginPage> {
   bool isPhoneInputArea = true; // 若為 true 則顯示手機輸入介面，false 則顯示驗證碼輸入介面
   bool isWorking = false; // 是否讓 button 顯示載入動畫
   String verificationId = ''; // 當使用者成功送出手機號碼後，將會從 Firebase 取得
+  String otpCode = '';
 
   @override
   void initState() {
@@ -70,7 +71,7 @@ class _LoginPageState extends State<LoginPage> {
               left: vw * 0.1,
               child: Container(
                 width: vw * 0.8,
-                height: vh * 0.35,
+                height: vh * 0.38,
                 padding: const EdgeInsets.all(25.0),
                 decoration: BoxDecoration(
                   color: Palette.backgroundColor,
@@ -99,13 +100,11 @@ class _LoginPageState extends State<LoginPage> {
   Column phoneInputArea() {
     return Column(
       children: [
-        const Padding(
-          padding: EdgeInsets.only(bottom: 10.0),
-          child: Text(
-            'Welcome Back !',
-            style: TextStyle(fontSize: 32.0, fontWeight: FontWeight.bold),
-          ),
+        const Text(
+          'Welcome Back !',
+          style: TextStyle(fontSize: 32.0, fontWeight: FontWeight.bold),
         ),
+        const SizedBox(height: 10.0),
         const Text(
           '一支手機號碼，即可使用所有功能',
           style: TextStyle(fontSize: 16.0),
@@ -129,7 +128,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
-          children: [Widgets.loginButton(isWorking, verifyPhone)],
+          children: [Widgets.loginButton(isWorking, '送出', verifyPhone)],
         ),
       ],
     );
@@ -137,6 +136,15 @@ class _LoginPageState extends State<LoginPage> {
 
   /* INFO: 拿手機號碼跟 Firebase 溝通 */
   void verifyPhone() async {
+    if (widget.phoneController.text.length != 10) {
+      Widgets.dialog(
+        context,
+        title: '無法傳送認證簡訊',
+        content: '您輸入的手機號碼格式有誤，請正確輸入10位數字！',
+      );
+      return;
+    }
+
     setState(() {
       isWorking = true;
     });
@@ -153,7 +161,7 @@ class _LoginPageState extends State<LoginPage> {
           Widgets.dialog(
             context,
             title: '無法傳送認證簡訊',
-            content: '您輸入的手機號碼格式有誤，請重新輸入！',
+            content: '您輸入的手機號碼格式有誤，請正確輸入10位數字！',
           );
         } else {
           Widgets.dialog(
@@ -181,21 +189,57 @@ class _LoginPageState extends State<LoginPage> {
   Column otpInputArea() {
     return Column(
       children: [
-        TextField(
-          enabled: !isWorking,
-          controller: widget.otpController,
-          keyboardType: TextInputType.number,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(6),
-          ],
-          style: const TextStyle(fontSize: Constants.textFieldFontSize),
-          decoration: const InputDecoration(
-            hintText: '驗證碼',
-            prefixIcon: Icon(Icons.vpn_key),
+        const Text(
+          '快完成了！',
+          style: TextStyle(fontSize: 32.0, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10.0),
+        const Text(
+          'Hello Stranger 已經發送簡訊至您的手機，請輸入 6 位數驗證碼',
+          style: TextStyle(fontSize: 16.0),
+        ),
+        const SizedBox(height: 30.0),
+        Expanded(
+          child: PinCodeTextField(
+            appContext: context,
+            enabled: !isWorking,
+            length: 6,
+            keyboardType: TextInputType.number,
+            onChanged: (code) {
+              setState(() {
+                otpCode = code;
+              });
+            },
+            onCompleted: (code) {
+              setState(() {
+                otpCode = code;
+              });
+              verifyOTP();
+            },
+            pinTheme: PinTheme(
+              shape: PinCodeFieldShape.box,
+              activeColor: Palette.secondaryColor,
+              selectedColor: Palette.primaryColor,
+              inactiveColor: Colors.grey,
+            ),
           ),
         ),
-        Widgets.loginButton(isWorking, verifyOTP),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TextButton(
+              onPressed: isWorking
+                  ? null
+                  : () {
+                      setState(() {
+                        isPhoneInputArea = true;
+                      });
+                    },
+              child: const Text('上一頁'),
+            ),
+            Widgets.loginButton(isWorking, '驗證', verifyOTP),
+          ],
+        ),
       ],
     );
   }
@@ -205,8 +249,36 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       isWorking = true;
     });
-    PhoneAuthCredential credential = PhoneAuthProvider.credential(verificationId: verificationId, smsCode: widget.otpController.text);
-    await FirebaseAuth.instance.signInWithCredential(credential);
+    PhoneAuthCredential credential = PhoneAuthProvider.credential(verificationId: verificationId, smsCode: otpCode);
+    try {
+      await FirebaseAuth.instance.signInWithCredential(credential);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'invalid-verification-code') {
+        Widgets.dialog(
+          context,
+          title: '驗證失敗',
+          content: '您輸入的驗證碼有誤，請重新輸入！',
+        );
+      } else if (e.code == 'session-expired') {
+        Widgets.dialog(
+          context,
+          title: '驗證失敗',
+          content: '憑證已過期，請回到上一頁重新發送驗證碼！',
+        );
+      } else {
+        Widgets.dialog(
+          context,
+          title: '發生錯誤',
+          content: '${e.code}: ${e.message}',
+        );
+      }
+      setState(() {
+        isWorking = false;
+      });
+
+      return;
+    }
+
     setState(() {
       Navigator.pushReplacementNamed(context, '/enroll');
     });

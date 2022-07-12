@@ -6,5 +6,8 @@ class Palette {
   static const Color primaryGradientColor = Color(0xFFFFD200);
   static const Color secondaryColor = Color(0xFF009CFF);
   static const Color secondaryGradientColor = Color(0xFF00CDFF);
+
+  static const Color inputEnableColor = Color(0xFFBDBDBD);
+  static const Color inputDisableColor = Color(0xFFE0E0E0);
   static const Color dividerColor = Color(0xFFDDDDDD);
 }

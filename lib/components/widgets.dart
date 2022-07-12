@@ -5,11 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import '/config/constants.dart';
-import '/config/palette.dart';
 
 class Widgets {
   /* INFO: 登入頁面按鈕 */
-  static Widget loginButton(bool isWorking, Function() function) {
+  static Widget loginButton(bool isWorking, String text, Function() function) {
     return ElevatedButton(
       onPressed: isWorking ? () {} : function,
       child: isWorking
@@ -17,9 +16,9 @@ class Widgets {
               color: Colors.white,
               size: Constants.buttonFontSize,
             )
-          : const Text(
-              '送出',
-              style: TextStyle(
+          : Text(
+              text,
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: Constants.buttonFontSize,
               ),

@@ -43,11 +43,21 @@ class HelloStranger extends StatelessWidget {
           ),
           contentPadding: const EdgeInsets.all(6.0),
           enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey[300]!),
+            borderSide: const BorderSide(
+              color: Palette.inputEnableColor,
+            ),
+            borderRadius: BorderRadius.circular(35.0),
+          ),
+          disabledBorder: OutlineInputBorder(
+            borderSide: const BorderSide(
+              color: Palette.inputDisableColor,
+            ),
             borderRadius: BorderRadius.circular(35.0),
           ),
           focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Palette.secondaryColor),
+            borderSide: const BorderSide(
+              color: Palette.secondaryColor,
+            ),
             borderRadius: BorderRadius.circular(35.0),
           ),
         ),
