@@ -205,6 +205,9 @@ class _LoginPageState extends State<LoginPage> {
             enabled: !isWorking,
             length: 6,
             keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ],
             onChanged: (code) {
               setState(() {
                 otpCode = code;
