@@ -16,6 +16,7 @@ dependencies:
   flutter_spinkit: ^5.1.0 # 按鈕載入動畫
   pin_code_fields: ^7.4.0 # 手機認證碼區塊
   image_picker: ^0.8.5+3 # 照片選擇
+  image_cropper: ^2.0.3 # 照片裁剪
 
 dev_dependencies:
   flutter_test:
