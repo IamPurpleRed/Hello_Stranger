@@ -14,13 +14,13 @@ class Widgets {
       child: isWorking
           ? const SpinKitThreeBounce(
               color: Colors.white,
-              size: Constants.buttonFontSize,
+              size: Constants.defaultTextSize,
             )
           : Text(
               text,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: Constants.buttonFontSize,
+                fontSize: Constants.defaultTextSize,
               ),
             ),
     );

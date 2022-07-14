@@ -25,3 +25,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/app_logo_foreground.png
+    - assets/default_account_photo.png

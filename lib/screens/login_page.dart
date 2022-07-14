@@ -99,35 +99,39 @@ class _LoginPageState extends State<LoginPage> {
   /* INFO: 手機輸入介面 */
   Column phoneInputArea() {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          'Welcome Back !',
-          style: TextStyle(fontSize: 32.0, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10.0),
-        const Text(
-          '一支手機號碼，即可使用所有功能',
-          style: TextStyle(fontSize: 16.0),
-        ),
-        const SizedBox(height: 30.0),
-        Expanded(
-          child: TextField(
-            enabled: !isWorking,
-            controller: widget.phoneController,
-            keyboardType: TextInputType.number,
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(10),
-            ],
-            style: const TextStyle(fontSize: Constants.textFieldFontSize),
-            decoration: const InputDecoration(
-              hintText: '手機號碼',
-              prefixIcon: Icon(Icons.phone_android),
+        Column(
+          children: [
+            const Text(
+              'Welcome Back !',
+              style: TextStyle(fontSize: 32.0, fontWeight: FontWeight.bold),
             ),
-          ),
+            const SizedBox(height: 10.0),
+            const Text(
+              '一支手機號碼，即可使用所有功能',
+              style: TextStyle(fontSize: Constants.contentSize),
+            ),
+            const SizedBox(height: 30.0),
+            TextField(
+              enabled: !isWorking,
+              controller: widget.phoneController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+              ],
+              style: const TextStyle(fontSize: Constants.defaultTextSize),
+              decoration: const InputDecoration(
+                hintText: '手機號碼',
+                prefixIcon: Icon(Icons.phone_android),
+              ),
+            ),
+          ],
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [Widgets.loginButton(isWorking, '送出', verifyPhone)],
         ),
       ],

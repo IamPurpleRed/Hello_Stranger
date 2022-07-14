@@ -39,7 +39,7 @@ class HelloStranger extends StatelessWidget {
         inputDecorationTheme: InputDecorationTheme(
           hintStyle: const TextStyle(
             color: Colors.grey,
-            fontSize: Constants.textFieldFontSize,
+            fontSize: Constants.defaultTextSize,
           ),
           contentPadding: const EdgeInsets.all(6.0),
           enabledBorder: OutlineInputBorder(
