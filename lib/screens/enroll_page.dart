@@ -109,7 +109,8 @@ class _EnrollPageState extends State<EnrollPage> {
 
     CroppedFile? croppedFile = await ImageCropper().cropImage(
       sourcePath: pickedImage.path,
-      aspectRatioPresets: [CropAspectRatioPreset.square],
+      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+      //aspectRatioPresets: [CropAspectRatioPreset.square],
       maxWidth: 500,
       maxHeight: 500,
       uiSettings: [
@@ -122,6 +123,10 @@ class _EnrollPageState extends State<EnrollPage> {
         ),
         IOSUiSettings(
           title: '裁剪您的帳戶圖片',
+          doneButtonTitle: '讚啦',
+          cancelButtonTitle: '取消',
+          rectWidth: 1.0,
+          rectHeight: 1.0,
         ),
       ],
     );
