@@ -1,10 +1,24 @@
+import 'dart:io';
+
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 
 import '/config/constants.dart';
 import '/config/palette.dart';
+import '/components/widgets.dart';
 
-class EnrollPage extends StatelessWidget {
-  const EnrollPage({Key? key}) : super(key: key);
+class EnrollPage extends StatefulWidget {
+  EnrollPage({Key? key}) : super(key: key);
+
+  final ImagePicker picker = ImagePicker();
+
+  @override
+  State<EnrollPage> createState() => _EnrollPageState();
+}
+
+class _EnrollPageState extends State<EnrollPage> {
+  File? accountPhoto;
 
   @override
   Widget build(BuildContext context) {
@@ -29,9 +43,11 @@ class EnrollPage extends StatelessWidget {
               child: Stack(
                 children: [
                   Positioned.fill(
-                    child: FittedBox(
-                      fit: BoxFit.fill,
-                      child: Image.asset('assets/default_account_photo.png'),
+                    child: ClipOval(
+                      child: FittedBox(
+                        fit: BoxFit.fill,
+                        child: (accountPhoto == null) ? Image.asset('assets/default_account_photo.png') : Image.file(accountPhoto!),
+                      ),
                     ),
                   ),
                   Positioned(
@@ -51,7 +67,7 @@ class EnrollPage extends StatelessWidget {
                           ),
                           color: Colors.white,
                           splashRadius: vw * 0.06,
-                          onPressed: () {},
+                          onPressed: pickAndCropImage,
                         ),
                       ),
                     ),
@@ -63,5 +79,27 @@ class EnrollPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void pickAndCropImage() async {
+    try {
+      final XFile? pickedImage = await widget.picker.pickImage(
+        source: ImageSource.gallery,
+      );
+
+      if (pickedImage == null) {
+        return;
+      } else {
+        setState(() {
+          accountPhoto = File(pickedImage.path);
+        });
+      }
+    } on PlatformException catch (e) {
+      Widgets.dialog(
+        context,
+        title: '上傳圖片失敗',
+        content: '原因：${e.message ?? '未知的錯誤'}',
+      );
+    }
   }
 }

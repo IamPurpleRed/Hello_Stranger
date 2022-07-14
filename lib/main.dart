@@ -8,7 +8,7 @@ import '/firebase_options.dart';
 import '/screens/enroll_page.dart';
 import '/screens/login_page.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -65,7 +65,7 @@ class HelloStranger extends StatelessWidget {
       initialRoute: '/login',
       routes: {
         '/login': (context) => LoginPage(),
-        '/enroll': (context) => const EnrollPage(),
+        '/enroll': (context) => EnrollPage(),
       },
     );
   }

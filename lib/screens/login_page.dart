@@ -139,7 +139,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   /* INFO: 拿手機號碼跟 Firebase 溝通 */
-  void verifyPhone() async {
+  Future<void> verifyPhone() async {
     if (widget.phoneController.text.length != 10) {
       Widgets.dialog(
         context,
@@ -252,7 +252,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   /* INFO: 拿 OTP 跟 Firebase 溝通 */
-  void verifyOTP() async {
+  Future<void> verifyOTP() async {
     setState(() {
       isWorking = true;
     });
