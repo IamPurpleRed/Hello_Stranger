@@ -1,6 +1,8 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
@@ -103,14 +105,19 @@ class _LoginPageState extends State<LoginPage> {
       children: [
         Column(
           children: [
-            const Text(
+            const AutoSizeText(
               'Welcome Back !',
-              style: TextStyle(fontSize: 32.0, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: Constants.headline1Size,
+                fontWeight: FontWeight.bold,
+              ),
+              maxLines: 1,
             ),
             const SizedBox(height: 10.0),
-            const Text(
+            const AutoSizeText(
               '一支手機號碼，即可使用所有功能',
               style: TextStyle(fontSize: Constants.contentSize),
+              maxLines: 1,
             ),
             const SizedBox(height: 30.0),
             TextField(
@@ -156,6 +163,10 @@ class _LoginPageState extends State<LoginPage> {
       phoneNumber: '+886${widget.phoneController.text.substring(1)}',
       verificationCompleted: (PhoneAuthCredential credential) async {
         await FirebaseAuth.instance.signInWithCredential(credential);
+        Fluttertoast.showToast(
+          msg: '成功自動輸入驗證碼',
+          timeInSecForIosWeb: 3,
+        );
         setState(() {
           Navigator.pushReplacementNamed(context, '/enroll');
         });
@@ -195,12 +206,16 @@ class _LoginPageState extends State<LoginPage> {
       children: [
         const Text(
           '快完成了！',
-          style: TextStyle(fontSize: 32.0, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: Constants.headline1Size,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 10.0),
-        const Text(
+        const AutoSizeText(
           'Hello Stranger 已經發送簡訊至您的手機，請輸入 6 位數驗證碼',
-          style: TextStyle(fontSize: 16.0),
+          style: TextStyle(fontSize: Constants.contentSize),
+          maxLines: 2,
         ),
         const SizedBox(height: 30.0),
         Expanded(
@@ -242,7 +257,10 @@ class _LoginPageState extends State<LoginPage> {
                         isPhoneInputArea = true;
                       });
                     },
-              child: const Text('上一頁'),
+              child: const Text(
+                '上一頁',
+                style: TextStyle(fontSize: Constants.defaultTextSize),
+              ),
             ),
             Widgets.loginButton(isWorking, '驗證', verifyOTP),
           ],

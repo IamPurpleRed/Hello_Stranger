@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/services.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -13,6 +14,8 @@ class EnrollPage extends StatefulWidget {
   EnrollPage({Key? key}) : super(key: key);
 
   final ImagePicker picker = ImagePicker();
+  final displayNameController = TextEditingController();
+  final realNameController = TextEditingController();
 
   @override
   State<EnrollPage> createState() => _EnrollPageState();
@@ -24,33 +27,64 @@ class _EnrollPageState extends State<EnrollPage> {
   @override
   Widget build(BuildContext context) {
     final double vw = MediaQuery.of(context).size.width;
+    final double vh = MediaQuery.of(context).size.height;
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Palette.primaryColor,
-        title: const Text('註冊'),
-      ),
-      body: SizedBox(
-        width: vw,
-        child: Column(
-          children: [
-            const Text(
-              '歡迎新朋友，讓大家知道你是誰吧！',
-              style: TextStyle(fontSize: Constants.contentSize),
-            ),
-            SizedBox(
-              width: vw * 0.6,
-              height: vw * 0.6,
-              child: accountPhotoArea(vw),
-            ),
-          ],
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).requestFocus(FocusNode()), // 點擊螢幕任一處以轉移焦點
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Palette.primaryColor,
+          title: const Text('註冊'),
+        ),
+        body: Center(
+          child: ListView(
+            shrinkWrap: true,
+            physics: const BouncingScrollPhysics(),
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: vh * 0.05),
+                child: const AutoSizeText(
+                  '歡迎新朋友，讓大家知道你是誰吧！',
+                  style: TextStyle(fontSize: Constants.defaultTextSize),
+                  maxLines: 1,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Center(
+                child: SizedBox(
+                  width: vw * 0.5,
+                  height: vw * 0.5,
+                  child: accountPhotoArea(vw, vh),
+                ),
+              ),
+              SizedBox(height: vh * 0.05),
+              Center(
+                child: SizedBox(
+                  width: vw * 0.7,
+                  child: inputArea(),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: vh * 0.05),
+                child: Center(
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    child: const Text(
+                      '註冊帳號',
+                      style: TextStyle(fontSize: Constants.defaultTextSize),
+                    ),
+                  ),
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
   }
 
   /* INFO: 使用者頭貼 */
-  Stack accountPhotoArea(double vw) {
+  Stack accountPhotoArea(double vw, double vh) {
     return Stack(
       children: [
         Positioned.fill(
@@ -62,7 +96,7 @@ class _EnrollPageState extends State<EnrollPage> {
           ),
         ),
         Positioned(
-          left: vw * 0.45,
+          left: vw * 0.35,
           bottom: 0,
           child: ClipOval(
             child: Container(
@@ -125,8 +159,6 @@ class _EnrollPageState extends State<EnrollPage> {
           title: '裁剪您的帳戶圖片',
           doneButtonTitle: '讚啦',
           cancelButtonTitle: '取消',
-          rectWidth: 1.0,
-          rectHeight: 1.0,
         ),
       ],
     );
@@ -137,5 +169,37 @@ class _EnrollPageState extends State<EnrollPage> {
         accountPhoto = File(croppedFile.path);
       });
     }
+  }
+
+  /* INFO: 輸入格區域 */
+  Column inputArea() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10.0),
+          child: TextField(
+            controller: widget.displayNameController,
+            style: const TextStyle(fontSize: Constants.defaultTextSize),
+            decoration: const InputDecoration(
+              labelText: '暱稱 (必填)',
+              hintText: '公開顯示的名稱',
+              prefixIcon: Icon(Icons.person),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10.0),
+          child: TextField(
+            controller: widget.realNameController,
+            style: const TextStyle(fontSize: Constants.defaultTextSize),
+            decoration: const InputDecoration(
+              labelText: '真實姓名 (選填)',
+              hintText: '方便好友辨認',
+              prefixIcon: Icon(Icons.badge),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
