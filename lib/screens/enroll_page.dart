@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -68,7 +70,7 @@ class _EnrollPageState extends State<EnrollPage> {
                 padding: EdgeInsets.symmetric(vertical: vh * 0.05),
                 child: Center(
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: registerAccount,
                     child: const Text(
                       '註冊帳號',
                       style: TextStyle(fontSize: Constants.defaultTextSize),
@@ -200,6 +202,50 @@ class _EnrollPageState extends State<EnrollPage> {
           ),
         ),
       ],
+    );
+  }
+
+  Future<void> registerAccount() async {
+    if (widget.displayNameController.text == '') {
+      Widgets.dialog(
+        context,
+        title: '註冊失敗',
+        content: '暱稱為必填欄位！',
+      );
+
+      return;
+    }
+
+    var db = FirebaseFirestore.instance;
+    Map<String, dynamic> userdata = {
+      'id': 0, // 尚未向 Firestore 取得
+      'enrollTime': DateTime.now().toUtc(),
+      'displayName': widget.displayNameController.text,
+      'realName': widget.realNameController.text,
+      'friends': [],
+      'friendRequests': [],
+      'blacklists': [],
+    };
+
+    db.runTransaction((transaction) async {
+      final memberCountDoc = db.collection('variables').doc('memberCount');
+      final snapshot = await transaction.get(memberCountDoc); // 取得目前會員總數，以賦予 id 給新會員
+      int newMemberCount = snapshot.get('value') + 1;
+      transaction.update(memberCountDoc, {'value': newMemberCount});
+      return newMemberCount;
+    }).then(
+      (value) {
+        userdata['id'] = value;
+        var user = FirebaseAuth.instance.currentUser;
+        db.collection('users').doc(user!.phoneNumber).set(userdata); // 寫入userdata 至 Firestore
+      },
+      onError: (e) {
+        Widgets.dialog(
+          context,
+          title: '註冊失敗',
+          content: e,
+        );
+      },
     );
   }
 }
