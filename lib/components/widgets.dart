@@ -10,7 +10,7 @@ class Widgets {
   /* INFO: 登入頁面按鈕 */
   static Widget loginButton(bool isWorking, String text, Function() function) {
     return ElevatedButton(
-      onPressed: isWorking ? () {} : function,
+      onPressed: isWorking ? null : function,
       child: isWorking
           ? const SpinKitThreeBounce(
               color: Colors.white,
@@ -26,8 +26,8 @@ class Widgets {
     );
   }
 
-  /* INFO: 提示方塊 */
-  static void dialog(BuildContext context, {required String title, required String content}) {
+  /* INFO: 提示方塊（使用者僅可按確認） */
+  static void alertDialog(BuildContext context, {required String title, required String content}) {
     var dialog = (Platform.isAndroid)
         ? AlertDialog(
             title: Text(title),
@@ -52,5 +52,13 @@ class Widgets {
           );
 
     showDialog(context: context, builder: (BuildContext context) => dialog);
+  }
+
+  static void progressIndicator() {
+    Container(
+      color: Colors.black.withOpacity(0.8),
+      padding: const EdgeInsets.all(20.0),
+      decoration: const BoxDecoration(),
+    );
   }
 }

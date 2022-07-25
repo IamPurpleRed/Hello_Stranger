@@ -53,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
               height: vh,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Palette.primaryColor, Palette.primaryGradientColor],
+                  colors: [Palette.primaryColor, Palette.secondaryColor],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -89,6 +89,7 @@ class _LoginPageState extends State<LoginPage> {
                 child: Text(
                   'version: ${packageInfo?.version}',
                   textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white),
                 ),
               ),
             ),
@@ -148,7 +149,7 @@ class _LoginPageState extends State<LoginPage> {
   /* INFO: 拿手機號碼跟 Firebase 溝通 */
   Future<void> verifyPhone() async {
     if (widget.phoneController.text.length != 10) {
-      Widgets.dialog(
+      Widgets.alertDialog(
         context,
         title: '無法傳送認證簡訊',
         content: '您輸入的手機號碼格式有誤，請正確輸入10位數字！',
@@ -173,13 +174,13 @@ class _LoginPageState extends State<LoginPage> {
       },
       verificationFailed: (FirebaseAuthException e) {
         if (e.code == 'invalid-phone-number') {
-          Widgets.dialog(
+          Widgets.alertDialog(
             context,
             title: '無法傳送認證簡訊',
             content: '您輸入的手機號碼格式有誤，請正確輸入10位數字！',
           );
         } else {
-          Widgets.dialog(
+          Widgets.alertDialog(
             context,
             title: '發生錯誤',
             content: '${e.code}: ${e.message}',
@@ -243,6 +244,7 @@ class _LoginPageState extends State<LoginPage> {
               activeColor: Palette.secondaryColor,
               selectedColor: Palette.primaryColor,
               inactiveColor: Colors.grey,
+              disabledColor: Colors.grey.shade300,
             ),
           ),
         ),
@@ -279,19 +281,19 @@ class _LoginPageState extends State<LoginPage> {
       await FirebaseAuth.instance.signInWithCredential(credential);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'invalid-verification-code') {
-        Widgets.dialog(
+        Widgets.alertDialog(
           context,
           title: '驗證失敗',
           content: '您輸入的驗證碼有誤，請重新輸入！',
         );
       } else if (e.code == 'session-expired') {
-        Widgets.dialog(
+        Widgets.alertDialog(
           context,
           title: '驗證失敗',
           content: '憑證已過期，請回到上一頁重新發送驗證碼！',
         );
       } else {
-        Widgets.dialog(
+        Widgets.alertDialog(
           context,
           title: '發生錯誤',
           content: '${e.code}: ${e.message}',

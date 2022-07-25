@@ -28,37 +28,36 @@ class HelloStranger extends StatelessWidget {
     return MaterialApp(
       title: 'Hello Stranger',
       theme: ThemeData(
-        primaryColor: Palette.primaryColor,
-        scaffoldBackgroundColor: Palette.backgroundColor,
-        buttonTheme: ButtonThemeData(
-          buttonColor: Palette.secondaryColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0),
-          ),
+        colorScheme: const ColorScheme.light().copyWith(
+          primary: Palette.primaryColor, // ThemeData 中的 primaryColor 參數日後將會被移除
+          secondary: Palette.secondaryColor, // ThemeData 中的 accent 參數已被棄用
         ),
+        scaffoldBackgroundColor: Palette.backgroundColor,
+        disabledColor: Colors.grey.shade300, // for checkbox
         inputDecorationTheme: InputDecorationTheme(
-          hintStyle: const TextStyle(
-            color: Colors.grey,
-            fontSize: Constants.defaultTextSize,
-          ),
           contentPadding: const EdgeInsets.all(6.0),
-          enabledBorder: OutlineInputBorder(
-            borderSide: const BorderSide(
-              color: Palette.inputEnableColor,
-            ),
-            borderRadius: BorderRadius.circular(35.0),
-          ),
-          disabledBorder: OutlineInputBorder(
-            borderSide: const BorderSide(
-              color: Palette.inputDisableColor,
-            ),
-            borderRadius: BorderRadius.circular(35.0),
-          ),
+          prefixIconColor: Colors.grey,
           focusedBorder: OutlineInputBorder(
             borderSide: const BorderSide(
               color: Palette.secondaryColor,
             ),
             borderRadius: BorderRadius.circular(35.0),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: const BorderSide(
+              color: Colors.grey,
+            ),
+            borderRadius: BorderRadius.circular(35.0),
+          ),
+          disabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Colors.grey.shade300,
+            ),
+            borderRadius: BorderRadius.circular(35.0),
+          ),
+          hintStyle: const TextStyle(
+            color: Colors.grey,
+            fontSize: Constants.defaultTextSize,
           ),
         ),
       ),

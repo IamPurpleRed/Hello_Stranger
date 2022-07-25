@@ -3,14 +3,15 @@ import 'dart:io';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter/material.dart';
 
+import '/components/widgets.dart';
 import '/config/constants.dart';
 import '/config/palette.dart';
-import '/components/widgets.dart';
 
 class EnrollPage extends StatefulWidget {
   EnrollPage({Key? key}) : super(key: key);
@@ -35,7 +36,6 @@ class _EnrollPageState extends State<EnrollPage> {
       onTap: () => FocusScope.of(context).requestFocus(FocusNode()), // 點擊螢幕任一處以轉移焦點
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Palette.primaryColor,
           title: const Text('註冊'),
         ),
         body: Center(
@@ -135,7 +135,7 @@ class _EnrollPageState extends State<EnrollPage> {
         return; // 使用者沒有或是取消選取照片
       }
     } on PlatformException catch (e) {
-      Widgets.dialog(
+      Widgets.alertDialog(
         context,
         title: '上傳圖片失敗',
         content: '原因：${e.message ?? '未知的錯誤'}',
@@ -146,7 +146,6 @@ class _EnrollPageState extends State<EnrollPage> {
     CroppedFile? croppedFile = await ImageCropper().cropImage(
       sourcePath: pickedImage.path,
       aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
-      //aspectRatioPresets: [CropAspectRatioPreset.square],
       maxWidth: 500,
       maxHeight: 500,
       uiSettings: [
@@ -207,7 +206,7 @@ class _EnrollPageState extends State<EnrollPage> {
 
   Future<void> registerAccount() async {
     if (widget.displayNameController.text == '') {
-      Widgets.dialog(
+      Widgets.alertDialog(
         context,
         title: '註冊失敗',
         content: '暱稱為必填欄位！',
@@ -217,30 +216,34 @@ class _EnrollPageState extends State<EnrollPage> {
     }
 
     var db = FirebaseFirestore.instance;
-    Map<String, dynamic> userdata = {
-      'id': 0, // 尚未向 Firestore 取得
-      'enrollTime': DateTime.now().toUtc(),
-      'displayName': widget.displayNameController.text,
-      'realName': widget.realNameController.text,
-      'friends': [],
-      'friendRequests': [],
-      'blacklists': [],
-    };
-
-    db.runTransaction((transaction) async {
+    await db.runTransaction((transaction) async {
       final memberCountDoc = db.collection('variables').doc('memberCount');
-      final snapshot = await transaction.get(memberCountDoc); // 取得目前會員總數，以賦予 id 給新會員
+      final snapshot = await transaction.get(memberCountDoc); // 取得目前用戶總數
       int newMemberCount = snapshot.get('value') + 1;
+      Map<String, dynamic> userdata = {
+        'id': newMemberCount, // 新會員 id = 目前用戶總數+1
+        'enrollTime': DateTime.now().toUtc(),
+        'displayName': widget.displayNameController.text,
+        'realName': widget.realNameController.text,
+        'friends': [],
+        'friendRequests': [],
+        'blacklists': [],
+      };
+
+      var user = FirebaseAuth.instance.currentUser;
+      await db.collection('users').doc(user!.phoneNumber).set(userdata); // 上傳新用戶資料
+
+      if (accountPhoto != null) {
+        final photoRef = FirebaseStorage.instance.ref().child('accountPhoto/${user.phoneNumber}.jpg');
+        await photoRef.putFile(accountPhoto!, SettableMetadata(contentType: "image/jpeg"));
+      }
+
       transaction.update(memberCountDoc, {'value': newMemberCount});
       return newMemberCount;
     }).then(
-      (value) {
-        userdata['id'] = value;
-        var user = FirebaseAuth.instance.currentUser;
-        db.collection('users').doc(user!.phoneNumber).set(userdata); // 寫入userdata 至 Firestore
-      },
+      (value) => print('Now you have $value members!'),
       onError: (e) {
-        Widgets.dialog(
+        Widgets.alertDialog(
           context,
           title: '註冊失敗',
           content: e,
