@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '/components/widgets.dart';
 import '/config/constants.dart';
@@ -100,21 +102,20 @@ class _EnrollPageState extends State<EnrollPage> {
         Positioned(
           left: vw * 0.35,
           bottom: 0,
-          child: ClipOval(
-            child: Container(
-              width: vw * 0.15,
-              height: vw * 0.15,
-              color: Palette.secondaryColor,
-              child: IconButton(
-                icon: LayoutBuilder(
-                  builder: (context, constraints) => Icon(
-                    Icons.image_search,
-                    size: constraints.maxWidth,
-                  ),
+          child: SizedBox(
+            width: vw * 0.15,
+            height: vw * 0.15,
+            child: ElevatedButton(
+              onPressed: pickAndCropImage,
+              style: ElevatedButton.styleFrom(
+                shape: const CircleBorder(),
+                padding: const EdgeInsets.all(10.0),
+              ),
+              child: LayoutBuilder(
+                builder: (context, constraints) => Icon(
+                  Icons.image_search,
+                  size: constraints.maxWidth,
                 ),
-                color: Colors.white,
-                splashRadius: vw * 0.06,
-                onPressed: pickAndCropImage,
               ),
             ),
           ),
@@ -217,38 +218,50 @@ class _EnrollPageState extends State<EnrollPage> {
 
     var db = FirebaseFirestore.instance;
     await db.runTransaction((transaction) async {
+      /* Step 1: 取得目前用戶總數 */
       final memberCountDoc = db.collection('variables').doc('memberCount');
-      final snapshot = await transaction.get(memberCountDoc); // 取得目前用戶總數
+      final snapshot = await transaction.get(memberCountDoc);
       int newMemberCount = snapshot.get('value') + 1;
+
+      /* Step 2: 準備 userdata */
       Map<String, dynamic> userdata = {
-        'id': newMemberCount, // 新會員 id = 目前用戶總數+1
+        'id': newMemberCount, // 賦予新用戶之 id = 目前用戶總數 + 1
         'enrollTime': DateTime.now().toUtc(),
         'displayName': widget.displayNameController.text,
         'realName': widget.realNameController.text,
         'friends': [],
         'friendRequests': [],
         'blacklists': [],
+        'messages': {},
       };
 
+      /* Step 3: 上傳 userdata 至 Firebase */
       var user = FirebaseAuth.instance.currentUser;
-      await db.collection('users').doc(user!.phoneNumber).set(userdata); // 上傳新用戶資料
+      await db.collection('users').doc(user!.phoneNumber).set(userdata);
 
+      /* Step 4: 儲存 userdata 至本地端 */
+      userdata['enrollTime'] = userdata['enrollTime'].toString(); // 一般 json 格式不支援 Datetime 類別
+      final appDir = await getApplicationDocumentsDirectory();
+      await File('${appDir.path}/userdata.json').create();
+      await File('${appDir.path}/userdata.json').writeAsString(jsonEncode(userdata));
+
+      /* Step 5: 上傳大頭貼至 Firebase */
       if (accountPhoto != null) {
         final photoRef = FirebaseStorage.instance.ref().child('accountPhoto/${user.phoneNumber}.jpg');
         await photoRef.putFile(accountPhoto!, SettableMetadata(contentType: "image/jpeg"));
       }
 
       transaction.update(memberCountDoc, {'value': newMemberCount});
-      return newMemberCount;
-    }).then(
-      (value) => print('Now you have $value members!'),
-      onError: (e) {
-        Widgets.alertDialog(
-          context,
-          title: '註冊失敗',
-          content: e,
-        );
-      },
-    );
+    }).then((value) {
+      setState(() {
+        Navigator.pushReplacementNamed(context, '/home');
+      });
+    }).catchError((e) {
+      Widgets.alertDialog(
+        context,
+        title: '註冊失敗',
+        content: e.toString(),
+      );
+    });
   }
 }

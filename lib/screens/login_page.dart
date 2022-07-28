@@ -131,7 +131,8 @@ class _LoginPageState extends State<LoginPage> {
               ],
               style: const TextStyle(fontSize: Constants.defaultTextSize),
               decoration: const InputDecoration(
-                hintText: '手機號碼',
+                labelText: '手機號碼',
+                hintText: '09XXXXXXXX',
                 prefixIcon: Icon(Icons.phone_android),
               ),
             ),

@@ -12,6 +12,7 @@ class _MainFrameState extends State<MainFrame> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('首頁')),
+      body: Container(),
     );
   }
 }

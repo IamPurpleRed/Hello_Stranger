@@ -1,7 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '/components/main_frame.dart';
 import '/config/constants.dart';
 import '/config/palette.dart';
 import '/firebase_options.dart';
@@ -34,8 +36,14 @@ class HelloStranger extends StatelessWidget {
         ),
         scaffoldBackgroundColor: Palette.backgroundColor,
         disabledColor: Colors.grey.shade300, // for checkbox
+        textSelectionTheme: const TextSelectionThemeData(
+          cursorColor: Palette.secondaryGradientColor,
+        ),
         inputDecorationTheme: InputDecorationTheme(
           contentPadding: const EdgeInsets.all(6.0),
+          floatingLabelStyle: const TextStyle(
+            color: Palette.secondaryColor,
+          ),
           prefixIconColor: Colors.grey,
           focusedBorder: OutlineInputBorder(
             borderSide: const BorderSide(
@@ -61,10 +69,11 @@ class HelloStranger extends StatelessWidget {
           ),
         ),
       ),
-      initialRoute: '/login',
+      initialRoute: (FirebaseAuth.instance.currentUser != null) ? '/home' : '/login',
       routes: {
         '/login': (context) => LoginPage(),
         '/enroll': (context) => EnrollPage(),
+        '/home': (context) => const MainFrame(),
       },
     );
   }

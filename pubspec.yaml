@@ -20,6 +20,7 @@ dependencies:
   image_cropper: ^2.0.3 # 照片裁剪
   image_picker: ^0.8.5+3 # 照片選擇
   package_info_plus: ^1.4.2 # 取得版本號
+  path_provider: ^2.0.11 # 本地檔案讀寫
   pin_code_fields: ^7.4.0 # 手機認證碼區塊
 
 
