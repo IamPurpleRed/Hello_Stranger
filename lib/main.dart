@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -69,7 +68,7 @@ class HelloStranger extends StatelessWidget {
           ),
         ),
       ),
-      initialRoute: (FirebaseAuth.instance.currentUser != null) ? '/home' : '/login',
+      initialRoute: /*(FirebaseAuth.instance.currentUser != null) ? '/home' : */ '/login',
       routes: {
         '/login': (context) => LoginPage(),
         '/enroll': (context) => EnrollPage(),

@@ -10,8 +10,11 @@ import 'package:flutter/services.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 
 import '/components/widgets.dart';
+import '/components/progress_dialog/progress_dialog.dart';
+import '/components/progress_dialog/progress_dialog_model.dart';
 import '/config/constants.dart';
 import '/config/palette.dart';
 
@@ -216,6 +219,17 @@ class _EnrollPageState extends State<EnrollPage> {
       return;
     }
 
+    var progress = ProgressDialogModel(0, '1/4: 與雲端建立連線');
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return ChangeNotifierProvider(
+          create: (context) => progress,
+          child: ProgressDialog(),
+        );
+      },
+    );
+
     var db = FirebaseFirestore.instance;
     await db.runTransaction((transaction) async {
       /* Step 1: 取得目前用戶總數 */
@@ -224,6 +238,7 @@ class _EnrollPageState extends State<EnrollPage> {
       int newMemberCount = snapshot.get('value') + 1;
 
       /* Step 2: 準備 userdata */
+      progress.update(0.25, '2/4: 初始用戶資料');
       Map<String, dynamic> userdata = {
         'id': newMemberCount, // 賦予新用戶之 id = 目前用戶總數 + 1
         'enrollTime': DateTime.now().toUtc(),
@@ -235,24 +250,32 @@ class _EnrollPageState extends State<EnrollPage> {
         'messages': {},
       };
 
-      /* Step 3: 上傳 userdata 至 Firebase */
-      var user = FirebaseAuth.instance.currentUser;
-      await db.collection('users').doc(user!.phoneNumber).set(userdata);
-
-      /* Step 4: 儲存 userdata 至本地端 */
+      /* Step 3: 儲存 userdata 和帳戶圖片至本地 */
+      progress.update(0.5, '3/4: 寫入資料至本地');
       userdata['enrollTime'] = userdata['enrollTime'].toString(); // 一般 json 格式不支援 Datetime 類別
       final appDir = await getApplicationDocumentsDirectory();
       await File('${appDir.path}/userdata.json').create();
       await File('${appDir.path}/userdata.json').writeAsString(jsonEncode(userdata));
+      //await File('${appDir.path}/userPhoto.jpg').create();
+      if (accountPhoto != null) {
+        print(accountPhoto!.absolute.toString());
+      }
 
-      /* Step 5: 上傳大頭貼至 Firebase */
+      /* Step 4: 上傳 userdata 和帳戶圖片至 Firebase */
+      progress.update(0.75, '4/4: 上傳資料至雲端');
+      var user = FirebaseAuth.instance.currentUser;
+      await db.collection('users').doc(user!.phoneNumber).set(userdata);
       if (accountPhoto != null) {
         final photoRef = FirebaseStorage.instance.ref().child('accountPhoto/${user.phoneNumber}.jpg');
-        await photoRef.putFile(accountPhoto!, SettableMetadata(contentType: "image/jpeg"));
+        await photoRef.putFile(
+          accountPhoto!,
+          SettableMetadata(contentType: "image/jpeg"),
+        );
       }
 
       transaction.update(memberCountDoc, {'value': newMemberCount});
     }).then((value) {
+      progress.update(1, '大功告成');
       setState(() {
         Navigator.pushReplacementNamed(context, '/home');
       });
