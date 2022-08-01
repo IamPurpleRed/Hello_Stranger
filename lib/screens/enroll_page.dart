@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -225,7 +226,7 @@ class _EnrollPageState extends State<EnrollPage> {
       builder: (BuildContext context) {
         return ChangeNotifierProvider(
           create: (context) => progress,
-          child: ProgressDialog(),
+          child: const ProgressDialog(),
         );
       },
     );
@@ -264,27 +265,31 @@ class _EnrollPageState extends State<EnrollPage> {
       /* Step 4: 上傳 userdata 和帳戶圖片至 Firebase */
       progress.update(0.75, '4/4: 上傳資料至雲端');
       var user = FirebaseAuth.instance.currentUser;
-      await db.collection('users').doc(user!.phoneNumber).set(userdata);
       if (accountPhoto != null) {
-        final photoRef = FirebaseStorage.instance.ref().child('accountPhoto/${user.phoneNumber}.jpg');
-        await photoRef.putFile(
+        final photoRef = FirebaseStorage.instance.ref().child('accountPhoto/${user!.phoneNumber}.jpg');
+        final task = photoRef.putFile(
           accountPhoto!,
           SettableMetadata(contentType: "image/jpeg"),
         );
+        await task.timeout(
+          const Duration(seconds: 30),
+          onTimeout: () async {
+            await task.cancel();
+            throw TimeoutException('圖片上傳逾時，若您的網路不穩定，請先避免上傳圖片');
+          },
+        );
       }
+      await db.collection('users').doc(user!.phoneNumber).set(userdata);
 
       transaction.update(memberCountDoc, {'value': newMemberCount});
     }).then((value) {
-      progress.update(1, '大功告成');
-      setState(() {
-        Navigator.pushReplacementNamed(context, '/home');
-      });
+      progress.update(1, '大功告成！');
     }).catchError((e) {
-      Widgets.alertDialog(
-        context,
-        title: '註冊失敗',
-        content: e.toString(),
-      );
+      if (e is PlatformException || e is TimeoutException) {
+        progress.hasError(e.message!);
+      } else {
+        progress.hasError(e.toString());
+      }
     });
   }
 }

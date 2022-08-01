@@ -307,8 +307,7 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    setState(() {
-      Navigator.pushReplacementNamed(context, '/enroll');
-    });
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, '/enroll');
   }
 }

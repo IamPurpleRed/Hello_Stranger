@@ -16,7 +16,7 @@ class ProgressDialog extends StatelessWidget {
     return Consumer<ProgressDialogModel>(
       builder: ((context, model, child) {
         return AlertDialog(
-          backgroundColor: Colors.black.withOpacity(0.8),
+          backgroundColor: Colors.black.withOpacity(0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8.0),
           ),
@@ -29,16 +29,11 @@ class ProgressDialog extends StatelessWidget {
                 SizedBox(
                   width: vw * 0.2,
                   height: vw * 0.2,
-                  child: CircularProgressIndicator(
-                    color: Palette.secondaryColor,
-                    backgroundColor: Colors.grey,
-                    strokeWidth: 10.0,
-                    value: model.value,
-                  ),
+                  child: mainIcon(model),
                 ),
-                const Text(
-                  '註冊中...',
-                  style: TextStyle(
+                Text(
+                  model.error ? '發生錯誤' : '註冊中...',
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: Constants.headline3Size,
                   ),
@@ -49,13 +44,42 @@ class ProgressDialog extends StatelessWidget {
                     color: Colors.white,
                     fontSize: Constants.defaultTextSize,
                   ),
-                  maxLines: 1,
+                  maxLines: 3,
                 ),
               ],
             ),
           ),
+          actionsPadding: const EdgeInsets.all(0),
+          actions: [
+            if (model.value == 1 || model.error)
+              TextButton(
+                child: const Text('確認'),
+                onPressed: () {
+                  Navigator.pop(context);
+                  if (model.value == 1) {
+                    Navigator.pushReplacementNamed(context, '/home');
+                  }
+                },
+              )
+          ],
         );
       }),
     );
+  }
+
+  /* INFO: 根據情況顯示進度條、成功Icon或失敗Icon */
+  Widget mainIcon(ProgressDialogModel model) {
+    if (model.value == 1) {
+      return const FittedBox(child: Icon(Icons.check_circle, color: Colors.green));
+    } else if (model.error) {
+      return const FittedBox(child: Icon(Icons.cancel, color: Colors.red));
+    } else {
+      return CircularProgressIndicator(
+        color: Palette.secondaryColor,
+        backgroundColor: Colors.grey,
+        strokeWidth: 10.0,
+        value: model.value,
+      );
+    }
   }
 }
