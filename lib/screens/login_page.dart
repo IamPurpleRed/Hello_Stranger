@@ -158,9 +158,7 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    setState(() {
-      isWorking = true;
-    });
+    setState(() => isWorking = true);
     await FirebaseAuth.instance.verifyPhoneNumber(
       phoneNumber: '+886${widget.phoneController.text.substring(1)}',
       verificationCompleted: (PhoneAuthCredential credential) async {
@@ -187,9 +185,7 @@ class _LoginPageState extends State<LoginPage> {
             content: '${e.code}: ${e.message}',
           );
         }
-        setState(() {
-          isWorking = false;
-        });
+        setState(() => isWorking = false);
       },
       codeSent: (String id, int? resendToken) {
         setState(() {
@@ -230,14 +226,10 @@ class _LoginPageState extends State<LoginPage> {
               FilteringTextInputFormatter.digitsOnly,
             ],
             onChanged: (code) {
-              setState(() {
-                otpCode = code;
-              });
+              setState(() => otpCode = code);
             },
             onCompleted: (code) {
-              setState(() {
-                otpCode = code;
-              });
+              setState(() => otpCode = code);
               verifyOTP();
             },
             pinTheme: PinTheme(
@@ -256,9 +248,7 @@ class _LoginPageState extends State<LoginPage> {
               onPressed: isWorking
                   ? null
                   : () {
-                      setState(() {
-                        isPhoneInputArea = true;
-                      });
+                      setState(() => isPhoneInputArea = true);
                     },
               child: const Text(
                 '上一頁',
@@ -274,9 +264,7 @@ class _LoginPageState extends State<LoginPage> {
 
   /* INFO: 拿 OTP 跟 Firebase 溝通 */
   Future<void> verifyOTP() async {
-    setState(() {
-      isWorking = true;
-    });
+    setState(() => isWorking = true);
     PhoneAuthCredential credential = PhoneAuthProvider.credential(verificationId: verificationId, smsCode: otpCode);
     try {
       await FirebaseAuth.instance.signInWithCredential(credential);
@@ -300,9 +288,7 @@ class _LoginPageState extends State<LoginPage> {
           content: '${e.code}: ${e.message}',
         );
       }
-      setState(() {
-        isWorking = false;
-      });
+      setState(() => isWorking = false);
 
       return;
     }

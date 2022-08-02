@@ -74,14 +74,29 @@ class _EnrollPageState extends State<EnrollPage> {
               ),
               Padding(
                 padding: EdgeInsets.symmetric(vertical: vh * 0.05),
-                child: Center(
-                  child: ElevatedButton(
-                    onPressed: registerAccount,
-                    child: const Text(
-                      '註冊帳號',
-                      style: TextStyle(fontSize: Constants.defaultTextSize),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: (accountPhoto == null)
+                          ? null
+                          : () {
+                              setState(() => accountPhoto = null);
+                            },
+                      child: const Text(
+                        '重置圖片',
+                        style: TextStyle(fontSize: Constants.defaultTextSize),
+                      ),
                     ),
-                  ),
+                    SizedBox(width: vw * 0.1),
+                    ElevatedButton(
+                      onPressed: registerAccount,
+                      child: const Text(
+                        '確認送出',
+                        style: TextStyle(fontSize: Constants.defaultTextSize),
+                      ),
+                    ),
+                  ],
                 ),
               )
             ],
@@ -171,9 +186,7 @@ class _EnrollPageState extends State<EnrollPage> {
     if (croppedFile == null) {
       return; // 使用者取消
     } else {
-      setState(() {
-        accountPhoto = File(croppedFile.path);
-      });
+      setState(() => accountPhoto = File(croppedFile.path));
     }
   }
 
@@ -223,6 +236,7 @@ class _EnrollPageState extends State<EnrollPage> {
     var progress = ProgressDialogModel(0, '1/4: 與雲端建立連線');
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return ChangeNotifierProvider(
           create: (context) => progress,
@@ -251,19 +265,8 @@ class _EnrollPageState extends State<EnrollPage> {
         'messages': {},
       };
 
-      /* Step 3: 儲存 userdata 和帳戶圖片至本地 */
-      progress.update(0.5, '3/4: 寫入資料至本地');
-      userdata['enrollTime'] = userdata['enrollTime'].toString(); // 一般 json 格式不支援 Datetime 類別
-      final appDir = await getApplicationDocumentsDirectory();
-      await File('${appDir.path}/userdata.json').create();
-      await File('${appDir.path}/userdata.json').writeAsString(jsonEncode(userdata));
-      //await File('${appDir.path}/userPhoto.jpg').create();
-      if (accountPhoto != null) {
-        print(accountPhoto!.absolute.toString());
-      }
-
-      /* Step 4: 上傳 userdata 和帳戶圖片至 Firebase */
-      progress.update(0.75, '4/4: 上傳資料至雲端');
+      /* Step 3: 上傳 userdata 和帳戶圖片至 Firebase */
+      progress.update(0.5, '3/4: 上傳資料至雲端');
       var user = FirebaseAuth.instance.currentUser;
       if (accountPhoto != null) {
         final photoRef = FirebaseStorage.instance.ref().child('accountPhoto/${user!.phoneNumber}.jpg');
@@ -280,6 +283,17 @@ class _EnrollPageState extends State<EnrollPage> {
         );
       }
       await db.collection('users').doc(user!.phoneNumber).set(userdata);
+
+      /* Step 4: 儲存 userdata 和帳戶圖片至本地 */
+      progress.update(0.75, '4/4: 寫入資料至本地');
+      userdata['enrollTime'] = userdata['enrollTime'].toString(); // 一般 json 格式不支援 Datetime 類別
+      final appDir = await getApplicationDocumentsDirectory();
+      await File('${appDir.path}/userdata.json').create();
+      await File('${appDir.path}/userdata.json').writeAsString(jsonEncode(userdata));
+      if (accountPhoto != null) {
+        await File('${appDir.path}/userPhoto.jpg').create();
+        await accountPhoto!.copy('${appDir.path}/account_photo.jpg');
+      }
 
       transaction.update(memberCountDoc, {'value': newMemberCount});
     }).then((value) {

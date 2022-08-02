@@ -15,53 +15,56 @@ class ProgressDialog extends StatelessWidget {
 
     return Consumer<ProgressDialogModel>(
       builder: ((context, model, child) {
-        return AlertDialog(
-          backgroundColor: Colors.black.withOpacity(0.9),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          content: SizedBox(
-            width: vw * 0.6,
-            height: vw * 0.6,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                SizedBox(
-                  width: vw * 0.2,
-                  height: vw * 0.2,
-                  child: mainIcon(model),
-                ),
-                Text(
-                  model.error ? '發生錯誤' : '註冊中...',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: Constants.headline3Size,
-                  ),
-                ),
-                AutoSizeText(
-                  model.detailedProgress,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: Constants.defaultTextSize,
-                  ),
-                  maxLines: 3,
-                ),
-              ],
+        return WillPopScope(
+          onWillPop: () async => false,
+          child: AlertDialog(
+            backgroundColor: Colors.black.withOpacity(0.9),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0),
             ),
+            content: SizedBox(
+              width: vw * 0.6,
+              height: vw * 0.6,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  SizedBox(
+                    width: vw * 0.2,
+                    height: vw * 0.2,
+                    child: mainIcon(model),
+                  ),
+                  Text(
+                    model.error ? '發生錯誤' : '註冊中...',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: Constants.headline3Size,
+                    ),
+                  ),
+                  AutoSizeText(
+                    model.detailedProgress,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: Constants.defaultTextSize,
+                    ),
+                    maxLines: 3,
+                  ),
+                ],
+              ),
+            ),
+            actionsPadding: const EdgeInsets.all(0),
+            actions: [
+              if (model.value == 1 || model.error)
+                TextButton(
+                  child: const Text('確認'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    if (model.value == 1) {
+                      Navigator.pushReplacementNamed(context, '/home');
+                    }
+                  },
+                )
+            ],
           ),
-          actionsPadding: const EdgeInsets.all(0),
-          actions: [
-            if (model.value == 1 || model.error)
-              TextButton(
-                child: const Text('確認'),
-                onPressed: () {
-                  Navigator.pop(context);
-                  if (model.value == 1) {
-                    Navigator.pushReplacementNamed(context, '/home');
-                  }
-                },
-              )
-          ],
         );
       }),
     );
