@@ -1,10 +1,17 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 
 import '/components/main_frame.dart';
 import '/config/constants.dart';
 import '/config/palette.dart';
+import 'config/userdata.dart';
 import '/firebase_options.dart';
 import '/screens/enroll_page.dart';
 import '/screens/login_page.dart';
@@ -18,7 +25,39 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const HelloStranger());
+
+  /* INFO: 確認本地端資料 */
+  Map<String, dynamic>? userdataMap;
+  final appDir = await getApplicationDocumentsDirectory();
+  final userdataFile = File('${appDir.path}/userdata.json');
+  File? accountPhoto = File('${appDir.path}/account_photo.jpg');
+  if (userdataFile.existsSync()) {
+    final userdataStr = await userdataFile.readAsString();
+    userdataMap = jsonDecode(userdataStr);
+  } else if (FirebaseAuth.instance.currentUser != null) {
+    // NOTE: 通過簡訊認證，本地卻無userdata.json的情況
+    await FirebaseAuth.instance.currentUser!.delete(); // 須將其登出
+  }
+
+  if (!accountPhoto.existsSync()) {
+    accountPhoto = null;
+  }
+  /* --- END --- */
+
+  runApp(
+    ChangeNotifierProvider<Userdata>(
+      create: (context) {
+        if (userdataMap == null) {
+          return Userdata(); // 本地端沒有資料，則建立空的instance
+        } else if (accountPhoto == null) {
+          return Userdata().decode(userdataMap); // 本地端有資料，但使用預設照片
+        } else {
+          return Userdata().decode(userdataMap).photo(accountPhoto); // 本地端有資料，且有設定照片
+        }
+      },
+      child: const HelloStranger(),
+    ),
+  );
 }
 
 class HelloStranger extends StatelessWidget {
@@ -68,7 +107,7 @@ class HelloStranger extends StatelessWidget {
           ),
         ),
       ),
-      initialRoute: /*(FirebaseAuth.instance.currentUser != null) ? '/home' : */ '/login',
+      initialRoute: (FirebaseAuth.instance.currentUser != null) ? '/home' : '/login',
       routes: {
         '/login': (context) => LoginPage(),
         '/enroll': (context) => EnrollPage(),

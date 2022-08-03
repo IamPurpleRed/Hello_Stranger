@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:hello_stranger/components/widgets.dart';
+import 'package:provider/provider.dart';
+
+import '/config/userdata.dart';
 
 class MainFrame extends StatefulWidget {
   const MainFrame({Key? key}) : super(key: key);
@@ -13,21 +15,22 @@ class _MainFrameState extends State<MainFrame> {
   Widget build(BuildContext context) {
     final double vw = MediaQuery.of(context).size.width;
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('首頁')),
-      body: Container(
-        child: TextButton(
-          child: const Text('測試'),
-          onPressed: () {
-            // Widgets.progressIndicator(
-            //   context,
-            //   vw: vw,
-            //   value: 0.5,
-            //   detail: 'detail',
-            // );
-          },
-        ),
-      ),
+    return Consumer<Userdata>(
+      builder: (context, userdata, child) {
+        return Scaffold(
+          appBar: AppBar(title: const Text('首頁')),
+          body: SizedBox(
+            width: vw * 0.7,
+            height: vw * 0.7,
+            child: ClipOval(
+              child: FittedBox(
+                fit: BoxFit.fill,
+                child: (userdata.accountPhoto == null) ? Image.asset('assets/default_account_photo.png') : Image.file(userdata.accountPhoto!),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

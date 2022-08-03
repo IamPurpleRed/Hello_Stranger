@@ -18,6 +18,7 @@ import '/components/progress_dialog/progress_dialog.dart';
 import '/components/progress_dialog/progress_dialog_model.dart';
 import '/config/constants.dart';
 import '/config/palette.dart';
+import '/config/userdata.dart';
 
 class EnrollPage extends StatefulWidget {
   EnrollPage({Key? key}) : super(key: key);
@@ -222,6 +223,7 @@ class _EnrollPageState extends State<EnrollPage> {
     );
   }
 
+  /* INFO: 註冊帳號 */
   Future<void> registerAccount() async {
     if (widget.displayNameController.text == '') {
       Widgets.alertDialog(
@@ -254,7 +256,7 @@ class _EnrollPageState extends State<EnrollPage> {
 
       /* Step 2: 準備 userdata */
       progress.update(0.25, '2/4: 初始用戶資料');
-      Map<String, dynamic> userdata = {
+      Map<String, dynamic> userdataMap = {
         'id': newMemberCount, // 賦予新用戶之 id = 目前用戶總數 + 1
         'enrollTime': DateTime.now().toUtc(),
         'displayName': widget.displayNameController.text,
@@ -282,16 +284,18 @@ class _EnrollPageState extends State<EnrollPage> {
           },
         );
       }
-      await db.collection('users').doc(user!.phoneNumber).set(userdata);
+      await db.collection('users').doc(user!.phoneNumber).set(userdataMap);
 
       /* Step 4: 儲存 userdata 和帳戶圖片至本地 */
       progress.update(0.75, '4/4: 寫入資料至本地');
-      userdata['enrollTime'] = userdata['enrollTime'].toString(); // 一般 json 格式不支援 Datetime 類別
+      Provider.of<Userdata>(context, listen: false).decode(userdataMap); // ignore: use_build_context_synchronously
+      userdataMap['enrollTime'] = userdataMap['enrollTime'].toString(); // 一般 json 格式不支援 Datetime 類別
       final appDir = await getApplicationDocumentsDirectory();
       await File('${appDir.path}/userdata.json').create();
-      await File('${appDir.path}/userdata.json').writeAsString(jsonEncode(userdata));
+      await File('${appDir.path}/userdata.json').writeAsString(jsonEncode(userdataMap));
       if (accountPhoto != null) {
-        await File('${appDir.path}/userPhoto.jpg').create();
+        Provider.of<Userdata>(context, listen: false).photo(accountPhoto); // ignore: use_build_context_synchronously
+        await File('${appDir.path}/account_photo.jpg').create();
         await accountPhoto!.copy('${appDir.path}/account_photo.jpg');
       }
 
