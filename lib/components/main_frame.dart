@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '/config/userdata.dart';
+import '/config/page_status.dart';
 
 class MainFrame extends StatefulWidget {
   const MainFrame({Key? key}) : super(key: key);
@@ -13,24 +13,17 @@ class MainFrame extends StatefulWidget {
 class _MainFrameState extends State<MainFrame> {
   @override
   Widget build(BuildContext context) {
-    final double vw = MediaQuery.of(context).size.width;
-
-    return Consumer<Userdata>(
-      builder: (context, userdata, child) {
-        return Scaffold(
-          appBar: AppBar(title: const Text('首頁')),
-          body: SizedBox(
-            width: vw * 0.7,
-            height: vw * 0.7,
-            child: ClipOval(
-              child: FittedBox(
-                fit: BoxFit.fill,
-                child: (userdata.accountPhoto == null) ? Image.asset('assets/default_account_photo.png') : Image.file(userdata.accountPhoto!),
-              ),
+    return ChangeNotifierProvider(
+      create: (context) => PageStatus(),
+      child: Consumer<PageStatus>(
+        builder: (context, page, child) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(page.title),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }
