@@ -31,12 +31,17 @@ Future<void> main() async {
   final appDir = await getApplicationDocumentsDirectory();
   final userdataFile = File('${appDir.path}/userdata.json');
   File? accountPhoto = File('${appDir.path}/account_photo.jpg');
-  if (userdataFile.existsSync()) {
+  if (userdataFile.existsSync() && FirebaseAuth.instance.currentUser != null) {
+    // NOTE: 本地有 userdata.json，且 Firebase 有 currentUser，登入才成立
     final userdataStr = await userdataFile.readAsString();
     userdataMap = jsonDecode(userdataStr);
-  } else if (FirebaseAuth.instance.currentUser != null) {
-    // NOTE: 通過簡訊認證，本地卻無userdata.json的情況
-    await FirebaseAuth.instance.currentUser!.delete(); // 須將其登出
+    userdataMap!['enrollTime'] = DateTime.parse(userdataMap['enrollTime']); // String -> Datetime
+  } else if (userdataFile.existsSync()) {
+    // NOTE: Firebase 沒有 currentUser，但本地卻有 userdata.json 的情況
+    await userdataFile.delete();
+    if (accountPhoto.existsSync()) {
+      await accountPhoto.delete();
+    }
   }
 
   if (!accountPhoto.existsSync()) {

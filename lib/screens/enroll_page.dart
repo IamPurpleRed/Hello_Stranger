@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
@@ -10,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import '/components/widgets.dart';
@@ -18,7 +16,7 @@ import '/components/progress_dialog/progress_dialog.dart';
 import '/components/progress_dialog/progress_dialog_model.dart';
 import '/config/constants.dart';
 import '/config/palette.dart';
-import '/config/userdata.dart';
+import '/utils/save_to_local.dart';
 
 class EnrollPage extends StatefulWidget {
   EnrollPage({Key? key}) : super(key: key);
@@ -288,15 +286,11 @@ class _EnrollPageState extends State<EnrollPage> {
 
       /* Step 4: 儲存 userdata 和帳戶圖片至本地 */
       progress.update(0.75, '4/4: 寫入資料至本地');
-      Provider.of<Userdata>(context, listen: false).decode(userdataMap); // ignore: use_build_context_synchronously
-      userdataMap['enrollTime'] = userdataMap['enrollTime'].toString(); // 一般 json 格式不支援 Datetime 類別
-      final appDir = await getApplicationDocumentsDirectory();
-      await File('${appDir.path}/userdata.json').create();
-      await File('${appDir.path}/userdata.json').writeAsString(jsonEncode(userdataMap));
+      if (!mounted) return;
+      await saveUserdata(userdataMap, context); // userdata 存入本地
       if (accountPhoto != null) {
-        Provider.of<Userdata>(context, listen: false).photo(accountPhoto); // ignore: use_build_context_synchronously
-        await File('${appDir.path}/account_photo.jpg').create();
-        await accountPhoto!.copy('${appDir.path}/account_photo.jpg');
+        if (!mounted) return;
+        await saveAccountPhotoFromFile(accountPhoto!, context);
       }
 
       transaction.update(memberCountDoc, {'value': newMemberCount});

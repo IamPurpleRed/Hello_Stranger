@@ -15,7 +15,7 @@ class Userdata extends ChangeNotifier {
 
   Userdata();
 
-  Userdata decode(Map userdataMap) {
+  Userdata decode(Map<String, dynamic> userdataMap) {
     id = userdataMap['id'];
     displayName = userdataMap['displayName'];
     realName = userdataMap['realName'];
@@ -31,11 +31,29 @@ class Userdata extends ChangeNotifier {
       enrollTime = userdataMap['enrollTime'];
     }
 
+    notifyListeners();
+
     return this;
   }
 
   Userdata photo(File? photo) {
     accountPhoto = photo;
+    notifyListeners();
+
+    return this;
+  }
+
+  Userdata logout() {
+    id = null;
+    enrollTime = null;
+    displayName = null;
+    realName = null;
+    accountPhoto = null;
+    friends = null;
+    friendRequests = null;
+    blacklists = null;
+    messages = null;
+    notifyListeners();
 
     return this;
   }
