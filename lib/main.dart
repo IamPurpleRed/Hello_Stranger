@@ -13,6 +13,7 @@ import '/config/constants.dart';
 import '/config/palette.dart';
 import 'config/userdata.dart';
 import '/firebase_options.dart';
+import '/screens/add_friend_page.dart';
 import '/screens/enroll_page.dart';
 import '/screens/login_page.dart';
 
@@ -112,11 +113,12 @@ class HelloStranger extends StatelessWidget {
           ),
         ),
       ),
-      initialRoute: (FirebaseAuth.instance.currentUser != null) ? '/home' : '/login',
+      initialRoute: (FirebaseAuth.instance.currentUser != null) ? '/main' : '/login',
       routes: {
         '/login': (context) => LoginPage(),
         '/enroll': (context) => EnrollPage(),
-        '/home': (context) => const MainFrame(),
+        '/main': (context) => const MainFrame(),
+        '/main/addFriend': (context) => AddFriendPage(),
       },
     );
   }

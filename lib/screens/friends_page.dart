@@ -1,10 +1,6 @@
-import 'dart:io';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '/components/widgets.dart';
 import '/config/constants.dart';
 import '/config/palette.dart';
 import '/config/userdata.dart';
@@ -19,35 +15,7 @@ class FriendsPage extends StatefulWidget {
     return [
       IconButton(
         icon: const Icon(Icons.person_add),
-        onPressed: () {
-          bool isWorking = false;
-          final phoneController = TextEditingController();
-
-          var dialog = (Platform.isAndroid)
-              ? AlertDialog(
-                  title: Text('新增好友'),
-                  content: Widgets.phoneTextField(enabled: !isWorking, controller: phoneController),
-                  scrollable: true,
-                  actions: [
-                    TextButton(
-                      child: const Text('確認'),
-                      onPressed: () => Navigator.pop(context),
-                    )
-                  ],
-                )
-              : CupertinoAlertDialog(
-                  title: Text('新增好友'),
-                  content: Widgets.phoneTextField(enabled: !isWorking, controller: phoneController),
-                  actions: [
-                    TextButton(
-                      child: const Text('確認'),
-                      onPressed: () => Navigator.pop(context),
-                    )
-                  ],
-                );
-
-          showDialog(context: context, builder: (BuildContext context) => dialog);
-        },
+        onPressed: () => Navigator.pushNamed(context, '/main/addFriend'),
       ),
     ];
   }

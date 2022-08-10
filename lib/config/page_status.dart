@@ -19,13 +19,13 @@ class PageStatus extends ChangeNotifier {
     HomePage(),
   ];
 
-  static const List<IconData> _navIcon = [
+  static const List<IconData> navIcon = [
     Icons.home,
     Icons.forum,
     Icons.people_alt,
     Icons.more_horiz,
   ];
-  static const List<String> _navTitle = [
+  static const List<String> navTitle = [
     '首頁',
     '訊息',
     '好友',
@@ -36,8 +36,6 @@ class PageStatus extends ChangeNotifier {
 
   get title => _title[currentIndex];
   get pageBody => _pageBody[currentIndex];
-  get navIcon => _navIcon[currentIndex];
-  get navTitle => _navTitle[currentIndex];
 
   /* INFO: 使用底部導覽列切換頁面時需要呼叫的函式 */
   void switchPage(int index) {

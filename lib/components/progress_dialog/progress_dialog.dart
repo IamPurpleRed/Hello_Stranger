@@ -59,7 +59,7 @@ class ProgressDialog extends StatelessWidget {
                   onPressed: () {
                     Navigator.pop(context);
                     if (model.value == 1) {
-                      Navigator.pushReplacementNamed(context, '/home');
+                      Navigator.pushReplacementNamed(context, '/main');
                     }
                   },
                 )

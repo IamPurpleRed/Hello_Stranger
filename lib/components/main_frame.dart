@@ -118,11 +118,11 @@ class _MainFrameState extends State<MainFrame> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              pageStatus.navIcon,
+              PageStatus.navIcon[index],
               color: flag ? Palette.secondaryColor : Colors.grey,
             ),
             AutoSizeText(
-              pageStatus.navTitle,
+              PageStatus.navTitle[index],
               style: TextStyle(
                 color: flag ? Palette.secondaryColor : Colors.grey,
               ),

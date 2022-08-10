@@ -300,13 +300,13 @@ class _LoginPageState extends State<LoginPage> {
       if (doc.exists) {
         await saveUserdata(doc.data()!, context);
         await saveAccountPhotoFromFirebase(phone!, context);
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushReplacementNamed(context, '/main');
       } else {
         Navigator.pushReplacementNamed(context, '/enroll');
       }
     } on FirebaseException catch (e) {
       if (e.code == 'storage/object-not-found') {
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushReplacementNamed(context, '/main');
       } else {
         rethrow;
       }
@@ -316,7 +316,7 @@ class _LoginPageState extends State<LoginPage> {
         title: '網路連線不佳',
         content: e.toString(),
       );
-      Navigator.pushReplacementNamed(context, '/home');
+      Navigator.pushReplacementNamed(context, '/main');
     } catch (e) {
       Widgets.alertDialog(
         context,
