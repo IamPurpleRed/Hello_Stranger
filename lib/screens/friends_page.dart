@@ -1,8 +1,12 @@
+import 'dart:io';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:hello_stranger/config/palette.dart';
 import 'package:provider/provider.dart';
 
+import '/components/widgets.dart';
 import '/config/constants.dart';
+import '/config/palette.dart';
 import '/config/userdata.dart';
 
 class FriendsPage extends StatefulWidget {
@@ -11,18 +15,46 @@ class FriendsPage extends StatefulWidget {
   @override
   State<FriendsPage> createState() => _FriendsPageState();
 
-  static List<Widget> appBarActions() {
+  static List<Widget> appBarActions(BuildContext context) {
     return [
       IconButton(
-        onPressed: () {},
         icon: const Icon(Icons.person_add),
+        onPressed: () {
+          bool isWorking = false;
+          final phoneController = TextEditingController();
+
+          var dialog = (Platform.isAndroid)
+              ? AlertDialog(
+                  title: Text('新增好友'),
+                  content: Widgets.phoneTextField(enabled: !isWorking, controller: phoneController),
+                  scrollable: true,
+                  actions: [
+                    TextButton(
+                      child: const Text('確認'),
+                      onPressed: () => Navigator.pop(context),
+                    )
+                  ],
+                )
+              : CupertinoAlertDialog(
+                  title: Text('新增好友'),
+                  content: Widgets.phoneTextField(enabled: !isWorking, controller: phoneController),
+                  actions: [
+                    TextButton(
+                      child: const Text('確認'),
+                      onPressed: () => Navigator.pop(context),
+                    )
+                  ],
+                );
+
+          showDialog(context: context, builder: (BuildContext context) => dialog);
+        },
       ),
     ];
   }
 }
 
 class _FriendsPageState extends State<FriendsPage> {
-  List<bool> expandedFlag = [true, true, true];
+  List<bool> expandedFlag = [false, false, true];
 
   @override
   Widget build(BuildContext context) {

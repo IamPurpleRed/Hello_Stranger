@@ -127,20 +127,9 @@ class _LoginPageState extends State<LoginPage> {
               maxLines: 1,
             ),
             const SizedBox(height: 30.0),
-            TextField(
+            Widgets.phoneTextField(
               enabled: !isWorking,
               controller: widget.phoneController,
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(10),
-              ],
-              style: const TextStyle(fontSize: Constants.defaultTextSize),
-              decoration: const InputDecoration(
-                labelText: '手機號碼',
-                hintText: '09XXXXXXXX',
-                prefixIcon: Icon(Icons.phone_android),
-              ),
             ),
           ],
         ),

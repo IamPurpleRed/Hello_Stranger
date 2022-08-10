@@ -2,13 +2,36 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import '/config/constants.dart';
 
 class Widgets {
+  /* INFO: 手機號碼專用輸入格 */
+  static TextField phoneTextField({
+    required bool enabled,
+    required controller,
+  }) {
+    return TextField(
+      enabled: enabled,
+      controller: controller,
+      keyboardType: TextInputType.number,
+      inputFormatters: [
+        FilteringTextInputFormatter.digitsOnly,
+        LengthLimitingTextInputFormatter(10),
+      ],
+      style: const TextStyle(fontSize: Constants.defaultTextSize),
+      decoration: const InputDecoration(
+        labelText: '手機號碼',
+        hintText: '09XXXXXXXX',
+        prefixIcon: Icon(Icons.phone_android),
+      ),
+    );
+  }
+
   /* INFO: 登入頁面按鈕 */
-  static Widget loginButton(bool isWorking, String text, Function() function) {
+  static ElevatedButton loginButton(bool isWorking, String text, Function() function) {
     return ElevatedButton(
       onPressed: isWorking ? null : function,
       child: isWorking

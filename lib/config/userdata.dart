@@ -9,8 +9,8 @@ class Userdata extends ChangeNotifier {
   String? realName;
   File? accountPhoto;
   List? friends;
-  List? myRequests;
-  List? friendRequests;
+  List<String>? myRequests;
+  List<String>? friendRequests;
   List? blacklists;
   Map? messages;
 
@@ -26,7 +26,7 @@ class Userdata extends ChangeNotifier {
     blacklists = userdataMap['blacklists'];
     messages = userdataMap['messages'];
 
-    // NOTE: 若是string，則需先將其轉換成datetime格式
+    /* NOTE: 若是 string，則需先將其轉換成 datetime 格式 */
     if (userdataMap['enrollTime'] is String) {
       enrollTime = DateTime.parse(userdataMap['enrollTime']);
     } else {

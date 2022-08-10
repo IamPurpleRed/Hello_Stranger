@@ -25,14 +25,12 @@ class _MainFrameState extends State<MainFrame> {
       create: (context) => PageStatus(),
       child: Consumer<PageStatus>(
         builder: (context, pageStatus, child) {
-          int idx = pageStatus.currentIndex;
-
           return Scaffold(
             appBar: AppBar(
-              title: Text(PageStatus.title[idx]),
-              actions: PageStatus.appbarActions[idx],
+              title: Text(pageStatus.title),
+              actions: pageStatus.getAppBarActions(context),
             ),
-            body: PageStatus.pageBody[idx],
+            body: pageStatus.pageBody,
             floatingActionButton: SizedBox(
               width: vw * 0.18,
               height: vh * 0.18,
@@ -120,11 +118,11 @@ class _MainFrameState extends State<MainFrame> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              PageStatus.navIcon[index],
+              pageStatus.navIcon,
               color: flag ? Palette.secondaryColor : Colors.grey,
             ),
             AutoSizeText(
-              PageStatus.navTitle[index],
+              pageStatus.navTitle,
               style: TextStyle(
                 color: flag ? Palette.secondaryColor : Colors.grey,
               ),
