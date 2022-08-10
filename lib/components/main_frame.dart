@@ -25,15 +25,19 @@ class _MainFrameState extends State<MainFrame> {
       create: (context) => PageStatus(),
       child: Consumer<PageStatus>(
         builder: (context, pageStatus, child) {
+          int idx = pageStatus.currentIndex;
+
           return Scaffold(
             appBar: AppBar(
-              title: Text(pageStatus.title),
+              title: Text(PageStatus.title[idx]),
+              actions: PageStatus.appbarActions[idx],
             ),
-            body: pageBody(pageStatus.currentIndex),
+            body: PageStatus.pageBody[idx],
             floatingActionButton: SizedBox(
               width: vw * 0.18,
               height: vh * 0.18,
               child: FloatingActionButton(
+                backgroundColor: Palette.primaryColor,
                 child: LayoutBuilder(
                   builder: (context, constraints) => Icon(
                     Icons.add_comment,

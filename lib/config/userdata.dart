@@ -9,6 +9,7 @@ class Userdata extends ChangeNotifier {
   String? realName;
   File? accountPhoto;
   List? friends;
+  List? myRequests;
   List? friendRequests;
   List? blacklists;
   Map? messages;
@@ -20,6 +21,7 @@ class Userdata extends ChangeNotifier {
     displayName = userdataMap['displayName'];
     realName = userdataMap['realName'];
     friends = userdataMap['friends'];
+    myRequests = userdataMap['myRequests'];
     friendRequests = userdataMap['friendRequests'];
     blacklists = userdataMap['blacklists'];
     messages = userdataMap['messages'];
@@ -50,6 +52,7 @@ class Userdata extends ChangeNotifier {
     realName = null;
     accountPhoto = null;
     friends = null;
+    myRequests = null;
     friendRequests = null;
     blacklists = null;
     messages = null;

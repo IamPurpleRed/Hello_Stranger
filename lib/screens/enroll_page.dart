@@ -40,9 +40,7 @@ class _EnrollPageState extends State<EnrollPage> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).requestFocus(FocusNode()), // 點擊螢幕任一處以轉移焦點
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('註冊'),
-        ),
+        appBar: AppBar(title: const Text('註冊')),
         body: Center(
           child: ListView(
             shrinkWrap: true,
@@ -260,6 +258,7 @@ class _EnrollPageState extends State<EnrollPage> {
         'displayName': widget.displayNameController.text,
         'realName': widget.realNameController.text,
         'friends': [],
+        'myRequests': [],
         'friendRequests': [],
         'blacklists': [],
         'messages': {},
