@@ -1,12 +1,14 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hello_stranger/utils/firebase_communication.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -16,7 +18,7 @@ import '/components/progress_dialog/progress_dialog.dart';
 import '/components/progress_dialog/progress_dialog_model.dart';
 import '/config/constants.dart';
 import '/config/palette.dart';
-import '/utils/save_to_local.dart';
+import '/utils/local_storage_communication.dart';
 
 class EnrollPage extends StatefulWidget {
   EnrollPage({Key? key}) : super(key: key);
@@ -243,12 +245,12 @@ class _EnrollPageState extends State<EnrollPage> {
       },
     );
 
-    var db = FirebaseFirestore.instance;
+    final db = FirebaseFirestore.instance;
     await db.runTransaction((transaction) async {
       /* Step 1: 取得目前用戶總數 */
       final memberCountDoc = db.collection('variables').doc('memberCount');
       final snapshot = await transaction.get(memberCountDoc);
-      int newMemberCount = snapshot.get('value') + 1;
+      final int newMemberCount = snapshot.get('value') + 1;
 
       /* Step 2: 準備 userdata */
       progress.update(0.25, '2/4: 初始用戶資料');
@@ -256,40 +258,28 @@ class _EnrollPageState extends State<EnrollPage> {
         'id': newMemberCount, // 賦予新用戶之 id = 目前用戶總數 + 1
         'enrollTime': DateTime.now().toUtc(),
         'displayName': widget.displayNameController.text,
-        'realName': widget.realNameController.text,
-        'friends': [],
-        'myRequests': [],
-        'friendRequests': [],
-        'blacklists': [],
-        'messages': {},
       };
+      final realName = widget.realNameController.text;
 
       /* Step 3: 上傳 userdata 和帳戶圖片至 Firebase */
       progress.update(0.5, '3/4: 上傳資料至雲端');
-      var user = FirebaseAuth.instance.currentUser;
+      final phone = FirebaseAuth.instance.currentUser!.phoneNumber;
       if (accountPhoto != null) {
-        final photoRef = FirebaseStorage.instance.ref().child('accountPhoto/${user!.phoneNumber}.jpg');
-        final task = photoRef.putFile(
-          accountPhoto!,
-          SettableMetadata(contentType: "image/jpeg"),
-        );
-        await task.timeout(
-          const Duration(seconds: 30),
-          onTimeout: () async {
-            await task.cancel();
-            throw TimeoutException('圖片上傳逾時，若您的網路不穩定，請先避免上傳圖片');
-          },
-        );
+        uploadAccountPhotoToFirebase(accountPhoto!);
       }
-      await db.collection('users').doc(user!.phoneNumber).set(userdataMap);
+      final ref = db.collection('users').doc(phone);
+      await ref.set(userdataMap);
+      await ref.collection('private').doc('realName').set({'value': realName});
 
       /* Step 4: 儲存 userdata 和帳戶圖片至本地 */
       progress.update(0.75, '4/4: 寫入資料至本地');
-      if (!mounted) return;
-      await saveUserdata(userdataMap, context); // userdata 存入本地
+      userdataMap['realName'] = realName;
+      userdataMap['friendRequests'] = [];
+      userdataMap['myRequests'] = [];
+      userdataMap['friends'] = [];
+      await saveUserdataToJson(context, userdataMap);
       if (accountPhoto != null) {
-        if (!mounted) return;
-        await saveAccountPhotoFromFile(accountPhoto!, context);
+        await saveAccountPhotoFromFile(context, accountPhoto!);
       }
 
       transaction.update(memberCountDoc, {'value': newMemberCount});

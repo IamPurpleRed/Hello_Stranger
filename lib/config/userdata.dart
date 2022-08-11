@@ -1,18 +1,17 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class Userdata extends ChangeNotifier {
   int? id;
   DateTime? enrollTime;
   String? displayName;
-  String? realName;
   File? accountPhoto;
+  String? realName;
+  List? friendRequests;
+  List? myRequests;
   List? friends;
-  List<String>? myRequests;
-  List<String>? friendRequests;
-  List? blacklists;
-  Map? messages;
 
   Userdata();
 
@@ -23,14 +22,12 @@ class Userdata extends ChangeNotifier {
     friends = userdataMap['friends'];
     myRequests = userdataMap['myRequests'];
     friendRequests = userdataMap['friendRequests'];
-    blacklists = userdataMap['blacklists'];
-    messages = userdataMap['messages'];
 
     /* NOTE: 若是 string，則需先將其轉換成 datetime 格式 */
-    if (userdataMap['enrollTime'] is String) {
-      enrollTime = DateTime.parse(userdataMap['enrollTime']);
-    } else {
-      enrollTime = userdataMap['enrollTime'];
+    if (userdataMap['enrollTime'] is Timestamp) {
+      userdataMap['enrollTime'] = (userdataMap['enrollTime'] as Timestamp).toDate();
+    } else if (userdataMap['enrollTime'] is String) {
+      userdataMap['enrollTime'] = DateTime.parse(userdataMap['enrollTime']);
     }
 
     notifyListeners();
@@ -54,8 +51,6 @@ class Userdata extends ChangeNotifier {
     friends = null;
     myRequests = null;
     friendRequests = null;
-    blacklists = null;
-    messages = null;
     notifyListeners();
 
     return this;

@@ -3,18 +3,20 @@
 import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:provider/provider.dart';
 
-import '/config/constants.dart';
 import '/components/widgets.dart';
+import '/config/constants.dart';
 import '/config/palette.dart';
-import '/utils/save_to_local.dart';
+import '/config/userdata.dart';
+import '/utils/firebase_communication.dart';
+import '/utils/local_storage_communication.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key? key}) : super(key: key);
@@ -294,15 +296,14 @@ class _LoginPageState extends State<LoginPage> {
   /* INFO: 登入成功後，若已是成員則從雲端下載資料，否則導向至註冊頁面 */
   Future<void> tasksAfterLogin() async {
     try {
-      var db = FirebaseFirestore.instance;
-      var phone = FirebaseAuth.instance.currentUser!.phoneNumber;
-      final doc = await db.collection('users').doc(phone).get();
-      if (doc.exists) {
-        await saveUserdata(doc.data()!, context);
-        await saveAccountPhotoFromFirebase(phone!, context);
-        Navigator.pushReplacementNamed(context, '/main');
-      } else {
+      Map<String, dynamic>? userdataMap = await fetchUserdataToMap();
+      if (userdataMap == null) {
         Navigator.pushReplacementNamed(context, '/enroll');
+      } else {
+        Provider.of<Userdata>(context, listen: false).decode(userdataMap);
+        await saveUserdataToJson(context, userdataMap);
+        Provider.of<Userdata>(context, listen: false).photo(await fetchAccountPhotoToFile(context)); // 若使用者沒有圖片，將觸發 FirebaseException: storage/object-not-found
+        Navigator.pushReplacementNamed(context, '/main');
       }
     } on FirebaseException catch (e) {
       if (e.code == 'storage/object-not-found') {
