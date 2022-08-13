@@ -1,4 +1,9 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hello_stranger/utils/firebase_communication.dart';
 import 'package:provider/provider.dart';
 
 import '/config/constants.dart';
@@ -26,6 +31,9 @@ class _FriendsPageState extends State<FriendsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final phone = FirebaseAuth.instance.currentUser!.phoneNumber;
+    final ref = FirebaseFirestore.instance.collection('users').doc(phone);
+
     return LayoutBuilder(
       builder: (context, constraints) {
         return ConstrainedBox(
@@ -34,7 +42,11 @@ class _FriendsPageState extends State<FriendsPage> {
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.all(10.0),
             child: ExpansionPanelList(
-              children: [friendRequestsPanel(), myRequestsPanel(), friendsPanel()],
+              children: [
+                friendRequestsPanel(ref),
+                myRequestsPanel(),
+                friendsPanel(),
+              ],
               expansionCallback: (panelIndex, isExpanded) {
                 setState(() => expandedFlag[panelIndex] = !expandedFlag[panelIndex]);
               },
@@ -45,7 +57,9 @@ class _FriendsPageState extends State<FriendsPage> {
     );
   }
 
-  ExpansionPanel friendRequestsPanel() {
+  ExpansionPanel friendRequestsPanel(DocumentReference ref) {
+    final stream = ref.collection('friendRequests').snapshots();
+
     return ExpansionPanel(
       canTapOnHeader: true,
       isExpanded: expandedFlag[0],
@@ -61,28 +75,51 @@ class _FriendsPageState extends State<FriendsPage> {
           ),
         );
       },
-      body: Column(
-        children: [
-          const Divider(height: 0),
-          ListTile(
-            leading: SizedBox(
-              width: 50,
-              height: 50,
-              child: ClipOval(
-                child: Image.file(Provider.of<Userdata>(context).accountPhoto!),
+      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: stream,
+        //initialData: Provider.of<Userdata>(context).friendRequests,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Text("Loading");
+          }
+
+          List resultList = snapshot.data!.docs.map((doc) => doc.data()).toList();
+
+          List<Widget> colChildren = [];
+          for (Map person in resultList) {
+            colChildren.add(const Divider(height: 0));
+            colChildren.add(
+              ListTile(
+                leading: SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: ClipOval(
+                    child: person['hasPhoto']
+                        ? FutureBuilder(
+                            future: fetchAccountPhotoToFile(context, fileName: person['phone']),
+                            initialData: Image.asset('assets/default_account_photo.png'),
+                            builder: (context, snapshot) {
+                              return Image.file(snapshot.data as File);
+                            },
+                          )
+                        : Image.asset('assets/default_account_photo.png'),
+                  ),
+                ),
+                title: Text(
+                  person['displayName'],
+                  style: const TextStyle(fontSize: Constants.defaultTextSize),
+                ),
+                subtitle: Text(person['phone']),
+                trailing: GestureDetector(
+                  child: const Icon(Icons.check_circle, size: 40, color: Colors.green),
+                  onTap: () {},
+                ),
               ),
-            ),
-            title: const Text(
-              'PR',
-              style: TextStyle(fontSize: Constants.defaultTextSize),
-            ),
-            subtitle: const Text('+886989030602'),
-            trailing: GestureDetector(
-              child: const Icon(Icons.check_circle, size: 40, color: Colors.green),
-              onTap: () {},
-            ),
-          ),
-        ],
+            );
+          }
+
+          return Column(children: colChildren);
+        },
       ),
     );
   }

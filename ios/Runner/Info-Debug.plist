@@ -56,7 +56,11 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_dartobservatory._tcp</string>
+	</array>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>這樣才能讓您從裝置選擇您的酷照片啊</string>
+	<string>這樣才能選擇您的酷照片啊</string>
 </dict>
 </plist>

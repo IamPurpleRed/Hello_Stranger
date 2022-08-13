@@ -37,21 +37,29 @@ Future<Map<String, dynamic>?> fetchUserdataToMap() async {
 }
 
 /* INFO: Firebase -> File(image) & local image file */
-Future<File?> fetchAccountPhotoToFile(BuildContext context) async {
+/* NOTE: 若 fileName 參數未填寫，將視同為登入作業 -> 自己的照片 */
+Future<File?> fetchAccountPhotoToFile(BuildContext context, {String? fileName}) async {
   final phone = FirebaseAuth.instance.currentUser!.phoneNumber;
   final photoRef = FirebaseStorage.instance.ref().child('accountPhoto/$phone.jpg');
 
   final appDir = await getApplicationDocumentsDirectory();
-  File photo = File('${appDir.path}/account_photo.jpg');
+  late File photo;
+  if (fileName == null) {
+    photo = File('${appDir.path}/account_photo.jpg');
+  } else {
+    photo = File('${appDir.path}/accountPhoto/$fileName.jpg');
+  }
 
   final task = photoRef.writeToFile(photo);
-  await task.timeout(
-    const Duration(seconds: 30),
-    onTimeout: () async {
-      await task.cancel();
-      throw TimeoutException('您已成功登入，但圖片下載逾時，請至網路穩定的地方再繼續使用 Hello Stranger！');
-    },
-  );
+  if (fileName == null) {
+    await task.timeout(
+      const Duration(seconds: 30),
+      onTimeout: () async {
+        await task.cancel();
+        throw TimeoutException('您已成功登入，但圖片下載逾時，請至網路穩定的地方再繼續使用 Hello Stranger！');
+      },
+    );
+  }
 
   return photo;
 }

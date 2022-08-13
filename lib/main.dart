@@ -38,11 +38,14 @@ Future<void> main() async {
     userdataMap = jsonDecode(userdataStr);
     userdataMap!['enrollTime'] = DateTime.parse(userdataMap['enrollTime']); // String -> Datetime
   } else if (userdataFile.existsSync()) {
-    // NOTE: Firebase 沒有 currentUser，但本地卻有 userdata.json 的情況
+    // NOTE: 本地有 userdata.json，但 Firebase 沒有 currentUser
     await userdataFile.delete();
     if (accountPhoto.existsSync()) {
       await accountPhoto.delete();
     }
+  } else {
+    // NOTE: Firebase 有 currentUser，但本地沒有 userdata.json
+    await FirebaseAuth.instance.signOut();
   }
 
   if (!accountPhoto.existsSync()) {
