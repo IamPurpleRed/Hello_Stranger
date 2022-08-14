@@ -45,7 +45,7 @@ class PageStatus extends ChangeNotifier {
 
   /* INFO: 取得當前頁面的 AppBar actions */
   List<Widget> getAppBarActions(BuildContext context) {
-    if (currentIndex == 3) {
+    if (currentIndex == 2) {
       return FriendsPage.appBarActions(context);
     }
 

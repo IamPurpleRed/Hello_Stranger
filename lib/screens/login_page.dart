@@ -302,14 +302,19 @@ class _LoginPageState extends State<LoginPage> {
       } else {
         Provider.of<Userdata>(context, listen: false).decode(userdataMap);
         await saveUserdataToJson(context, userdataMap);
-        Provider.of<Userdata>(context, listen: false).photo(await fetchAccountPhotoToFile(context)); // 若使用者沒有圖片，將觸發 FirebaseException: storage/object-not-found
+        Provider.of<Userdata>(context, listen: false).photo(await fetchAccountPhotoToFile());
         Navigator.pushReplacementNamed(context, '/main');
       }
     } on FirebaseException catch (e) {
       if (e.code == 'storage/object-not-found') {
         Navigator.pushReplacementNamed(context, '/main');
       } else {
-        rethrow;
+        Widgets.alertDialog(
+          context,
+          title: '發生錯誤',
+          content: e.toString(),
+        );
+        setState(() => isWorking = false);
       }
     } on TimeoutException catch (e) {
       Widgets.alertDialog(

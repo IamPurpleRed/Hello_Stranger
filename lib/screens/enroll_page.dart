@@ -58,10 +58,9 @@ class _EnrollPageState extends State<EnrollPage> {
                 ),
               ),
               Center(
-                child: SizedBox(
-                  width: vw * 0.5,
-                  height: vw * 0.5,
-                  child: accountPhotoArea(vw, vh),
+                child: SizedBox.square(
+                  dimension: vw * 0.5,
+                  child: accountPhotoArea(vw),
                 ),
               ),
               SizedBox(height: vh * 0.05),
@@ -106,7 +105,7 @@ class _EnrollPageState extends State<EnrollPage> {
   }
 
   /* INFO: 使用者頭貼 */
-  Stack accountPhotoArea(double vw, double vh) {
+  Stack accountPhotoArea(double vw) {
     return Stack(
       children: [
         Positioned.fill(
@@ -120,9 +119,8 @@ class _EnrollPageState extends State<EnrollPage> {
         Positioned(
           left: vw * 0.35,
           bottom: 0,
-          child: SizedBox(
-            width: vw * 0.15,
-            height: vw * 0.15,
+          child: SizedBox.square(
+            dimension: vw * 0.15,
             child: ElevatedButton(
               onPressed: pickAndCropImage,
               style: ElevatedButton.styleFrom(

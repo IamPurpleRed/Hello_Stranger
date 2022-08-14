@@ -11,7 +11,7 @@ import 'package:provider/provider.dart';
 import '/components/main_frame.dart';
 import '/config/constants.dart';
 import '/config/palette.dart';
-import 'config/userdata.dart';
+import '/config/userdata.dart';
 import '/firebase_options.dart';
 import '/screens/add_friend_page.dart';
 import '/screens/enroll_page.dart';

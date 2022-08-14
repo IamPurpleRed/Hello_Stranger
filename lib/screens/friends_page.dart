@@ -1,9 +1,6 @@
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:hello_stranger/utils/firebase_communication.dart';
 import 'package:provider/provider.dart';
 
 import '/config/constants.dart';
@@ -75,15 +72,16 @@ class _FriendsPageState extends State<FriendsPage> {
           ),
         );
       },
-      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      body: StreamBuilder(
         stream: stream,
-        //initialData: Provider.of<Userdata>(context).friendRequests,
+        initialData: Provider.of<Userdata>(context).friendRequests,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Text("Loading");
+          late List resultList;
+          if (snapshot.data is QuerySnapshot) {
+            resultList = (snapshot.data as QuerySnapshot).docs.map((doc) => doc.data()).toList();
+          } else {
+            resultList = (snapshot.data as List);
           }
-
-          List resultList = snapshot.data!.docs.map((doc) => doc.data()).toList();
 
           List<Widget> colChildren = [];
           for (Map person in resultList) {
@@ -94,15 +92,17 @@ class _FriendsPageState extends State<FriendsPage> {
                   width: 50,
                   height: 50,
                   child: ClipOval(
-                    child: person['hasPhoto']
-                        ? FutureBuilder(
-                            future: fetchAccountPhotoToFile(context, fileName: person['phone']),
-                            initialData: Image.asset('assets/default_account_photo.png'),
-                            builder: (context, snapshot) {
-                              return Image.file(snapshot.data as File);
-                            },
-                          )
-                        : Image.asset('assets/default_account_photo.png'),
+                    child:
+                        // person['hasPhoto']
+                        //     ? FutureBuilder(
+                        //         future: fetchAccountPhotoToFile(phone: person['phone']),
+                        //         initialData: Image.asset('assets/default_account_photo.png'),
+                        //         builder: (context, snapshot) {
+                        //           return Image.file(snapshot.data as File);
+                        //         },
+                        //       )
+                        //     :
+                        Image.asset('assets/default_account_photo.png'),
                   ),
                 ),
                 title: Text(
@@ -141,21 +141,21 @@ class _FriendsPageState extends State<FriendsPage> {
         );
       },
       body: Column(
-        children: [
-          const Divider(height: 0),
+        children: const [
+          Divider(height: 0),
           ListTile(
-            leading: SizedBox(
-              width: 50,
-              height: 50,
-              child: ClipOval(
-                child: Image.file(Provider.of<Userdata>(context).accountPhoto!),
-              ),
-            ),
-            title: const Text(
+            // leading: SizedBox(
+            //   width: 50,
+            //   height: 50,
+            //   child: ClipOval(
+            //     child: Image.file(Provider.of<Userdata>(context).accountPhoto!),
+            //   ),
+            // ),
+            title: Text(
               'PR',
               style: TextStyle(fontSize: Constants.defaultTextSize),
             ),
-            subtitle: const Text('+886989030602'),
+            subtitle: Text('+886989030602'),
           ),
         ],
       ),
@@ -179,21 +179,21 @@ class _FriendsPageState extends State<FriendsPage> {
         );
       },
       body: Column(
-        children: [
-          const Divider(height: 0),
+        children: const [
+          Divider(height: 0),
           ListTile(
-            leading: SizedBox(
-              width: 50,
-              height: 50,
-              child: ClipOval(
-                child: Image.file(Provider.of<Userdata>(context).accountPhoto!),
-              ),
-            ),
-            title: const Text(
+            // leading: SizedBox(
+            //   width: 50,
+            //   height: 50,
+            //   child: ClipOval(
+            //     child: Image.file(Provider.of<Userdata>(context).accountPhoto!),
+            //   ),
+            // ),
+            title: Text(
               'PR',
               style: TextStyle(fontSize: Constants.defaultTextSize),
             ),
-            subtitle: const Text('+886989030602'),
+            subtitle: Text('+886989030602'),
           ),
         ],
       ),
