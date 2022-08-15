@@ -55,8 +55,6 @@ class _FriendsPageState extends State<FriendsPage> {
   }
 
   ExpansionPanel friendRequestsPanel(DocumentReference ref) {
-    final stream = ref.collection('friendRequests').snapshots();
-
     return ExpansionPanel(
       canTapOnHeader: true,
       isExpanded: expandedFlag[0],
@@ -73,19 +71,19 @@ class _FriendsPageState extends State<FriendsPage> {
         );
       },
       body: StreamBuilder(
-        stream: stream,
-        initialData: Provider.of<Userdata>(context).friendRequests,
+        stream: ref.collection('friendRequests').snapshots(),
+        initialData: Provider.of<Userdata>(context, listen: false).friendRequests!,
         builder: (context, snapshot) {
-          late List<Map<String, dynamic>> resultList;
+          late List resultList;
           if (snapshot.data is QuerySnapshot) {
-            resultList = (snapshot.data as QuerySnapshot).docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
-            Provider.of<Userdata>(context).updateFriendRequests = resultList;
+            resultList = (snapshot.data as QuerySnapshot).docs.map((doc) => doc.data()).toList();
+            Provider.of<Userdata>(context, listen: false).friendRequests = resultList;
           } else {
-            resultList = (snapshot.data as List<Map<String, dynamic>>);
+            resultList = snapshot.data as List;
           }
 
           List<Widget> colChildren = [];
-          for (Map person in resultList) {
+          for (Map<String, dynamic> person in resultList) {
             colChildren.add(const Divider(height: 0));
             colChildren.add(
               ListTile(

@@ -8,16 +8,16 @@ class Userdata extends ChangeNotifier {
   DateTime? enrollTime;
   String? displayName;
   String? realName;
-  List<Map<String, dynamic>>? friendRequests;
-  List<Map<String, dynamic>>? myRequests;
-  List<Map<String, dynamic>>? friends;
+  List? friendRequests;
+  List? myRequests;
+  List? friends;
 
   File? accountPhoto;
 
   Userdata({Map<String, dynamic>? map, File? photo}) {
     if (map != null) {
       id = map['id'];
-      enrollTime = DateTime.parse(map['enrollTime']);
+      enrollTime = map['enrollTime'];
       displayName = map['displayName'];
       realName = map['realName'];
       friendRequests = map['friendRequests'];
@@ -60,21 +60,6 @@ class Userdata extends ChangeNotifier {
 
   set updateUserdataPrivate(Map<String, dynamic> map) {
     realName = map['realName'];
-    notifyListeners();
-  }
-
-  set updateFriendRequests(List<Map<String, dynamic>> list) {
-    friendRequests = list;
-    notifyListeners();
-  }
-
-  set updateMyRequests(List<Map<String, dynamic>> list) {
-    myRequests = list;
-    notifyListeners();
-  }
-
-  set updateFriends(List<Map<String, dynamic>> list) {
-    friends = list;
     notifyListeners();
   }
 

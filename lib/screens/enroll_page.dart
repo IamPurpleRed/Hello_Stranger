@@ -273,9 +273,9 @@ class _EnrollPageState extends State<EnrollPage> {
       progress.update(0.75, '4/4: 寫入資料至本地');
       Provider.of<Userdata>(context, listen: false).updateUserdataPublic = userdataPublicMap;
       Provider.of<Userdata>(context, listen: false).updateUserdataPrivate = userdataPrivateMap;
-      Provider.of<Userdata>(context, listen: false).updateFriendRequests = [];
-      Provider.of<Userdata>(context, listen: false).updateMyRequests = [];
-      Provider.of<Userdata>(context, listen: false).updateFriends = [];
+      Provider.of<Userdata>(context, listen: false).friendRequests = [];
+      Provider.of<Userdata>(context, listen: false).myRequests = [];
+      Provider.of<Userdata>(context, listen: false).friends = [];
       await saveUserdataMapToJson(Provider.of<Userdata>(context).map);
       if (accountPhoto != null) {
         Provider.of<Userdata>(context, listen: false).updateAccountPhoto = accountPhoto;
