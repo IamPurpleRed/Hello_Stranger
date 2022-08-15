@@ -76,11 +76,12 @@ class _FriendsPageState extends State<FriendsPage> {
         stream: stream,
         initialData: Provider.of<Userdata>(context).friendRequests,
         builder: (context, snapshot) {
-          late List resultList;
+          late List<Map<String, dynamic>> resultList;
           if (snapshot.data is QuerySnapshot) {
-            resultList = (snapshot.data as QuerySnapshot).docs.map((doc) => doc.data()).toList();
+            resultList = (snapshot.data as QuerySnapshot).docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+            Provider.of<Userdata>(context).updateFriendRequests = resultList;
           } else {
-            resultList = (snapshot.data as List);
+            resultList = (snapshot.data as List<Map<String, dynamic>>);
           }
 
           List<Widget> colChildren = [];

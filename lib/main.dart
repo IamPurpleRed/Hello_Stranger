@@ -55,15 +55,7 @@ Future<void> main() async {
 
   runApp(
     ChangeNotifierProvider<Userdata>(
-      create: (context) {
-        if (userdataMap == null) {
-          return Userdata(); // 本地端沒有資料，則建立空的instance
-        } else if (accountPhoto == null) {
-          return Userdata().decode(userdataMap); // 本地端有資料，但使用預設照片
-        } else {
-          return Userdata().decode(userdataMap).photo(accountPhoto); // 本地端有資料，且有設定照片
-        }
-      },
+      create: (context) => Userdata(map: userdataMap, photo: accountPhoto),
       child: const HelloStranger(),
     ),
   );

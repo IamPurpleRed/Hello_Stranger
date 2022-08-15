@@ -300,9 +300,9 @@ class _LoginPageState extends State<LoginPage> {
       if (userdataMap == null) {
         Navigator.pushReplacementNamed(context, '/enroll');
       } else {
-        Provider.of<Userdata>(context, listen: false).decode(userdataMap);
-        await saveUserdataToJson(context, userdataMap);
-        Provider.of<Userdata>(context, listen: false).photo(await fetchAccountPhotoToFile());
+        Provider.of<Userdata>(context, listen: false).importFromCloudFirestore = userdataMap;
+        await saveUserdataMapToJson(userdataMap);
+        Provider.of<Userdata>(context, listen: false).updateAccountPhoto = await fetchAccountPhotoToFile();
         Navigator.pushReplacementNamed(context, '/main');
       }
     } on FirebaseException catch (e) {

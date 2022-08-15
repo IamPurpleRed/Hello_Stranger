@@ -5,7 +5,6 @@ import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hello_stranger/utils/firebase_communication.dart';
@@ -13,6 +12,7 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import '../config/userdata.dart';
 import '/components/widgets.dart';
 import '/components/progress_dialog/progress_dialog.dart';
 import '/components/progress_dialog/progress_dialog_model.dart';
@@ -252,32 +252,34 @@ class _EnrollPageState extends State<EnrollPage> {
 
       /* Step 2: 準備 userdata */
       progress.update(0.25, '2/4: 初始用戶資料');
-      Map<String, dynamic> userdataMap = {
+      Map<String, dynamic> userdataPublicMap = {
         'id': newMemberCount, // 賦予新用戶之 id = 目前用戶總數 + 1
         'enrollTime': DateTime.now().toUtc(),
         'displayName': widget.displayNameController.text,
       };
-      final realName = widget.realNameController.text;
+      Map<String, dynamic> userdataPrivateMap = {
+        'realName': widget.realNameController.text,
+      };
 
       /* Step 3: 上傳 userdata 和帳戶圖片至 Firebase */
       progress.update(0.5, '3/4: 上傳資料至雲端');
-      final phone = FirebaseAuth.instance.currentUser!.phoneNumber;
       if (accountPhoto != null) {
-        uploadAccountPhotoToFirebase(accountPhoto!);
+        uploadAccountPhoto(accountPhoto!);
       }
-      final ref = db.collection('users').doc(phone);
-      await ref.set(userdataMap);
-      await ref.collection('private').doc('realName').set({'value': realName});
+      uploadUserdataPublic(userdataPublicMap);
+      uploadUserdataPrivate(userdataPrivateMap);
 
       /* Step 4: 儲存 userdata 和帳戶圖片至本地 */
       progress.update(0.75, '4/4: 寫入資料至本地');
-      userdataMap['realName'] = realName;
-      userdataMap['friendRequests'] = [];
-      userdataMap['myRequests'] = [];
-      userdataMap['friends'] = [];
-      await saveUserdataToJson(context, userdataMap);
+      Provider.of<Userdata>(context, listen: false).updateUserdataPublic = userdataPublicMap;
+      Provider.of<Userdata>(context, listen: false).updateUserdataPrivate = userdataPrivateMap;
+      Provider.of<Userdata>(context, listen: false).updateFriendRequests = [];
+      Provider.of<Userdata>(context, listen: false).updateMyRequests = [];
+      Provider.of<Userdata>(context, listen: false).updateFriends = [];
+      await saveUserdataMapToJson(Provider.of<Userdata>(context).map);
       if (accountPhoto != null) {
-        await saveAccountPhotoFromFile(context, accountPhoto!);
+        Provider.of<Userdata>(context, listen: false).updateAccountPhoto = accountPhoto;
+        await saveAccountPhotoFromFile(accountPhoto!);
       }
 
       transaction.update(memberCountDoc, {'value': newMemberCount});

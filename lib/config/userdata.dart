@@ -7,39 +7,80 @@ class Userdata extends ChangeNotifier {
   int? id;
   DateTime? enrollTime;
   String? displayName;
-  File? accountPhoto;
   String? realName;
-  List? friendRequests;
-  List? myRequests;
-  List? friends;
+  List<Map<String, dynamic>>? friendRequests;
+  List<Map<String, dynamic>>? myRequests;
+  List<Map<String, dynamic>>? friends;
 
-  Userdata();
+  File? accountPhoto;
 
-  Userdata decode(Map<String, dynamic> userdataMap) {
-    id = userdataMap['id'];
-    displayName = userdataMap['displayName'];
-    realName = userdataMap['realName'];
-    friends = userdataMap['friends'];
-    myRequests = userdataMap['myRequests'];
-    friendRequests = userdataMap['friendRequests'];
-
-    /* NOTE: 若是 string，則需先將其轉換成 datetime 格式 */
-    if (userdataMap['enrollTime'] is Timestamp) {
-      userdataMap['enrollTime'] = (userdataMap['enrollTime'] as Timestamp).toDate();
-    } else if (userdataMap['enrollTime'] is String) {
-      userdataMap['enrollTime'] = DateTime.parse(userdataMap['enrollTime']);
+  Userdata({Map<String, dynamic>? map, File? photo}) {
+    if (map != null) {
+      id = map['id'];
+      enrollTime = DateTime.parse(map['enrollTime']);
+      displayName = map['displayName'];
+      realName = map['realName'];
+      friendRequests = map['friendRequests'];
+      myRequests = map['myRequests'];
+      friends = map['friends'];
     }
-
-    notifyListeners();
-
-    return this;
-  }
-
-  Userdata photo(File? photo) {
     accountPhoto = photo;
     notifyListeners();
+  }
 
-    return this;
+  Map<String, dynamic> get map {
+    return {
+      'id': id,
+      'enrollTime': enrollTime,
+      'displayName': displayName,
+      'realName': realName,
+      'friendRequests': friendRequests,
+      'myRequests': myRequests,
+      'friends': friends,
+    };
+  }
+
+  set importFromCloudFirestore(Map<String, dynamic> map) {
+    id = map['id'];
+    enrollTime = (map['enrollTime'] as Timestamp).toDate();
+    displayName = map['displayName'];
+    realName = map['realName'];
+    friendRequests = map['friendRequests'];
+    myRequests = map['myRequests'];
+    friends = map['friends'];
+    notifyListeners();
+  }
+
+  set updateUserdataPublic(Map<String, dynamic> map) {
+    id = map['id'];
+    enrollTime = map['enrollTime'];
+    displayName = map['displayName'];
+    notifyListeners();
+  }
+
+  set updateUserdataPrivate(Map<String, dynamic> map) {
+    realName = map['realName'];
+    notifyListeners();
+  }
+
+  set updateFriendRequests(List<Map<String, dynamic>> list) {
+    friendRequests = list;
+    notifyListeners();
+  }
+
+  set updateMyRequests(List<Map<String, dynamic>> list) {
+    myRequests = list;
+    notifyListeners();
+  }
+
+  set updateFriends(List<Map<String, dynamic>> list) {
+    friends = list;
+    notifyListeners();
+  }
+
+  set updateAccountPhoto(File? photo) {
+    accountPhoto = photo;
+    notifyListeners();
   }
 
   Userdata logout() {

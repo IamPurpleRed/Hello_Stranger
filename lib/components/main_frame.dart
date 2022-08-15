@@ -4,9 +4,6 @@ import 'package:provider/provider.dart';
 
 import '/config/page_status.dart';
 import '/config/palette.dart';
-import '/screens/friends_page.dart';
-import '/screens/home_page.dart';
-import '/screens/messages_page.dart';
 
 class MainFrame extends StatefulWidget {
   const MainFrame({Key? key}) : super(key: key);
@@ -54,19 +51,6 @@ class _MainFrameState extends State<MainFrame> {
     );
   }
 
-  /* INFO: 頁面內容 */
-  Widget pageBody(int index) {
-    if (index == 0) {
-      return const HomePage();
-    } else if (index == 1) {
-      return const MessagesPage();
-    } else if (index == 2) {
-      return const FriendsPage();
-    } else {
-      return const HomePage();
-    }
-  }
-
   /* INFO: 底部導覽列 */
   BottomAppBar bottomAppBar(double vw, PageStatus pageStatus) {
     return BottomAppBar(
@@ -105,10 +89,7 @@ class _MainFrameState extends State<MainFrame> {
 
   /* INFO: 導覽列元素 */
   SizedBox bottomAppBarItem(double vw, PageStatus pageStatus, int index) {
-    bool flag = false;
-    if (pageStatus.currentIndex == index) {
-      flag = true;
-    }
+    bool flag = (pageStatus.currentIndex == index) ? true : false;
 
     return SizedBox(
       width: vw * 0.15,
@@ -129,7 +110,7 @@ class _MainFrameState extends State<MainFrame> {
             ),
           ],
         ),
-        onTap: () => pageStatus.switchPage(index),
+        onTap: () => pageStatus.currentIndex = index,
       ),
     );
   }

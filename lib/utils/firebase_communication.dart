@@ -6,7 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path_provider/path_provider.dart';
 
-/* INFO: Firebase -> Map<String, dynamic> */
+/* INFO: cloud_firestore -> Map<String, dynamic> */
 Future<Map<String, dynamic>?> fetchUserdataToMap() async {
   final db = FirebaseFirestore.instance;
   final phone = FirebaseAuth.instance.currentUser!.phoneNumber;
@@ -20,12 +20,12 @@ Future<Map<String, dynamic>?> fetchUserdataToMap() async {
     userdataMap['realName'] = doc.data()!['value'];
   });
 
-  await ref.collection('myRequests').get().then((collection) {
-    userdataMap['myRequests'] = collection.docs.map((doc) => doc.data()).toList();
-  });
-
   await ref.collection('friendRequests').get().then((collection) {
     userdataMap['friendRequests'] = collection.docs.map((doc) => doc.data()).toList();
+  });
+
+  await ref.collection('myRequests').get().then((collection) {
+    userdataMap['myRequests'] = collection.docs.map((doc) => doc.data()).toList();
   });
 
   await ref.collection('friends').get().then((collection) {
@@ -35,7 +35,7 @@ Future<Map<String, dynamic>?> fetchUserdataToMap() async {
   return userdataMap;
 }
 
-/* INFO: Firebase -> File(image) & local image file */
+/* INFO: cloud_storage -> File(image) & local image file */
 // NOTE: 若 fileName 參數未填寫，將視同為登入作業 -> 自己的照片
 // NOTE: 若使用者沒有圖片，將觸發 FirebaseException: storage/object-not-found
 Future<File> fetchAccountPhotoToFile({String? phone}) async {
@@ -48,7 +48,7 @@ Future<File> fetchAccountPhotoToFile({String? phone}) async {
   }
 
   if (!photo.existsSync()) {
-    photo.createSync(recursive: true);
+    await photo.create(recursive: true);
   }
 
   if (phone == null) {
@@ -70,11 +70,24 @@ Future<File> fetchAccountPhotoToFile({String? phone}) async {
   return photo;
 }
 
-/* INFO: Map<String, dynamic> -> Firebase */
-Future<void> uploadUserdataMapToFirebase(Map<String, dynamic> map) async {}
+/* INFO: Map<String, dynamic> -> cloud_firestore */
+Future<void> uploadUserdataPublic(Map<String, dynamic> map) async {
+  final db = FirebaseFirestore.instance;
+  final phone = FirebaseAuth.instance.currentUser!.phoneNumber;
+  final ref = db.collection('users').doc(phone);
+  await ref.set(map);
+}
 
-/* INFO: File(image) -> Firebase */
-Future<void> uploadAccountPhotoToFirebase(File photo) async {
+/* INFO: Map<String, dynamic> -> cloud_firestore */
+Future<void> uploadUserdataPrivate(Map<String, dynamic> map) async {
+  final db = FirebaseFirestore.instance;
+  final phone = FirebaseAuth.instance.currentUser!.phoneNumber;
+  final ref = db.collection('users').doc(phone);
+  await ref.collection('private').doc('realName').set({'value': map['realName']});
+}
+
+/* INFO: File(image) -> cloud_storage */
+Future<void> uploadAccountPhoto(File photo) async {
   final phone = FirebaseAuth.instance.currentUser!.phoneNumber;
   final photoRef = FirebaseStorage.instance.ref().child('accountPhoto/$phone.jpg');
   final task = photoRef.putFile(

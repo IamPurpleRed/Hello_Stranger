@@ -5,6 +5,7 @@ import '/screens/home_page.dart';
 import '/screens/messages_page.dart';
 
 class PageStatus extends ChangeNotifier {
+  /* INFO: private static variables */
   static const List<String> _title = [
     'Hello Stranger',
     '訊息',
@@ -19,6 +20,7 @@ class PageStatus extends ChangeNotifier {
     HomePage(),
   ];
 
+  /* INFO: public static variables */
   static const List<IconData> navIcon = [
     Icons.home,
     Icons.forum,
@@ -32,20 +34,24 @@ class PageStatus extends ChangeNotifier {
     '更多',
   ];
 
-  int currentIndex = 0;
+  /* INFO: variables */
+  int _currentIndex = 0;
 
-  get title => _title[currentIndex];
-  get pageBody => _pageBody[currentIndex];
+  /* INFO: getters */
+  int get currentIndex => _currentIndex;
+  String get title => _title[_currentIndex];
+  Widget get pageBody => _pageBody[_currentIndex];
 
-  /* INFO: 使用底部導覽列切換頁面時需要呼叫的函式 */
-  void switchPage(int index) {
-    currentIndex = index;
+  /* INFO: setters */
+  /* NOTE: 使用底部導覽列切換頁面時需要呼叫的函式 */
+  set currentIndex(int idx) {
+    _currentIndex = idx;
     notifyListeners();
   }
 
   /* INFO: 取得當前頁面的 AppBar actions */
   List<Widget> getAppBarActions(BuildContext context) {
-    if (currentIndex == 2) {
+    if (_currentIndex == 2) {
       return FriendsPage.appBarActions(context);
     }
 

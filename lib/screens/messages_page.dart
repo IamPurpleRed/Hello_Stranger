@@ -10,6 +10,6 @@ class MessagesPage extends StatefulWidget {
 class _MessagesPageState extends State<MessagesPage> {
   @override
   Widget build(BuildContext context) {
-    return Text('messages page');
+    return const Text('messages page');
   }
 }
