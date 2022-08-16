@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 
 import '/components/widgets.dart';
@@ -23,11 +24,13 @@ class AddFriendPage extends StatefulWidget {
 }
 
 class _AddFriendPageState extends State<AddFriendPage> {
+  Map<String, dynamic>? resultMap;
   bool showResultArea = false;
   String? resultDisplayName;
   File? resultPhoto;
-  bool canTapBtn = false;
   String buttonText = '發送交友請求';
+  bool restrict = false; // 若搜尋之用戶有存在交友邀請清單、我的邀請清單、朋友清單三者之一，則為 true
+  bool isWorking = false;
 
   @override
   Widget build(BuildContext context) {
@@ -106,31 +109,29 @@ class _AddFriendPageState extends State<AddFriendPage> {
       return;
     }
 
-    Map? data = await fetchMemberdataPublic(phone);
-    bool hasFind = false;
+    Map<String, dynamic>? data = await fetchMemberdataPublic(phone);
     if (data != null) {
-      if (!hasFind) {
-        for (Map person in Provider.of<Userdata>(context, listen: false).friendRequests!) {
-          if (person['phone'] == phone) {
-            hasFind = true;
-            setState(() => buttonText = '好友已寄邀請');
-            break;
-          }
+      data['phone'] = phone;
+      for (Map person in Provider.of<Userdata>(context, listen: false).friendRequests!) {
+        if (person['phone'] == phone) {
+          restrict = true;
+          setState(() => buttonText = '好友已寄邀請');
+          break;
         }
       }
-      if (!hasFind) {
+      if (!restrict) {
         for (Map person in Provider.of<Userdata>(context, listen: false).myRequests!) {
           if (person['phone'] == phone) {
-            hasFind = true;
+            restrict = true;
             setState(() => buttonText = '等待好友回覆');
             break;
           }
         }
       }
-      if (!hasFind) {
+      if (!restrict) {
         for (Map person in Provider.of<Userdata>(context, listen: false).friends!) {
           if (person['phone'] == phone) {
-            hasFind = true;
+            restrict = true;
             setState(() => buttonText = '已經成為好友');
             break;
           }
@@ -139,9 +140,9 @@ class _AddFriendPageState extends State<AddFriendPage> {
     }
 
     setState(() {
+      resultMap = data;
       showResultArea = true;
       resultDisplayName = (data != null) ? data['displayName'] : null;
-      canTapBtn = hasFind ? false : true;
     });
 
     if (data != null) {
@@ -153,7 +154,7 @@ class _AddFriendPageState extends State<AddFriendPage> {
 
   /* INFO: 搜尋結果區域，按下搜尋鍵後顯示 */
   Widget resultArea(double vw) {
-    if (resultDisplayName == null) {
+    if (resultMap == null) {
       return const SizedBox(
         width: double.infinity,
         child: AutoSizeText(
@@ -188,12 +189,32 @@ class _AddFriendPageState extends State<AddFriendPage> {
           ),
         ),
         const SizedBox(height: 30.0),
-        ElevatedButton(
-          onPressed: canTapBtn ? () {} : null,
-          child: Text(
-            buttonText,
-            style: const TextStyle(fontSize: Constants.defaultTextSize),
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: (!restrict && !isWorking)
+                  ? () async {
+                      setState(() => isWorking = true);
+                      await sendMyRequest(resultMap!, Provider.of<Userdata>(context, listen: false));
+                      setState(() {
+                        isWorking = false;
+                        restrict = true;
+                        buttonText = '已送出邀請';
+                      });
+                    }
+                  : null,
+              child: isWorking
+                  ? const SpinKitThreeBounce(
+                      color: Colors.white,
+                      size: Constants.defaultTextSize,
+                    )
+                  : Text(
+                      buttonText,
+                      style: const TextStyle(fontSize: Constants.defaultTextSize),
+                    ),
+            ),
+          ],
         ),
       ],
     );

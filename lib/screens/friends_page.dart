@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hello_stranger/utils/firebase_communication.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -110,7 +111,7 @@ class _FriendsPageState extends State<FriendsPage> {
                 subtitle: Text(person['phone']),
                 trailing: GestureDetector(
                   child: const Icon(Icons.check_circle, size: 40, color: Colors.green),
-                  onTap: () {},
+                  onTap: () => acceptFriendRequest(person, Provider.of<Userdata>(context, listen: false)),
                 ),
               ),
             );
@@ -210,10 +211,6 @@ class _FriendsPageState extends State<FriendsPage> {
                   style: const TextStyle(fontSize: Constants.defaultTextSize),
                 ),
                 subtitle: Text(person['phone']),
-                trailing: GestureDetector(
-                  child: const Icon(Icons.check_circle, size: 40, color: Colors.green),
-                  onTap: () {},
-                ),
               ),
             );
           }

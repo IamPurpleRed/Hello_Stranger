@@ -1,6 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:async';
 import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
@@ -266,8 +265,8 @@ class _EnrollPageState extends State<EnrollPage> {
       if (userphoto != null) {
         await uploadUserphoto(userphoto!);
       }
-      await uploadUserdataPublic(userdataPublicMap);
-      await uploadUserdataPrivate(userdataPrivateMap);
+      uploadUserdataPublic(transaction, userdataPublicMap);
+      uploadUserdataPrivate(transaction, userdataPrivateMap);
 
       /* Step 4: 儲存 userdata 和帳戶圖片至本地 */
       progress.update(0.75, '4/4: 寫入資料至本地');
