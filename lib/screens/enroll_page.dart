@@ -32,7 +32,7 @@ class EnrollPage extends StatefulWidget {
 }
 
 class _EnrollPageState extends State<EnrollPage> {
-  File? accountPhoto;
+  File? userphoto;
 
   @override
   Widget build(BuildContext context) {
@@ -76,10 +76,10 @@ class _EnrollPageState extends State<EnrollPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton(
-                      onPressed: (accountPhoto == null)
+                      onPressed: (userphoto == null)
                           ? null
                           : () {
-                              setState(() => accountPhoto = null);
+                              setState(() => userphoto = null);
                             },
                       child: const Text(
                         '重置圖片',
@@ -112,7 +112,7 @@ class _EnrollPageState extends State<EnrollPage> {
           child: ClipOval(
             child: FittedBox(
               fit: BoxFit.fill,
-              child: (accountPhoto == null) ? Image.asset('assets/default_account_photo.png') : Image.file(accountPhoto!),
+              child: (userphoto == null) ? Image.asset('assets/default_account_photo.png') : Image.file(userphoto!),
             ),
           ),
         ),
@@ -183,7 +183,7 @@ class _EnrollPageState extends State<EnrollPage> {
     if (croppedFile == null) {
       return; // 使用者取消
     } else {
-      setState(() => accountPhoto = File(croppedFile.path));
+      setState(() => userphoto = File(croppedFile.path));
     }
   }
 
@@ -263,11 +263,11 @@ class _EnrollPageState extends State<EnrollPage> {
 
       /* Step 3: 上傳 userdata 和帳戶圖片至 Firebase */
       progress.update(0.5, '3/4: 上傳資料至雲端');
-      if (accountPhoto != null) {
-        uploadAccountPhoto(accountPhoto!);
+      if (userphoto != null) {
+        await uploadUserphoto(userphoto!);
       }
-      uploadUserdataPublic(userdataPublicMap);
-      uploadUserdataPrivate(userdataPrivateMap);
+      await uploadUserdataPublic(userdataPublicMap);
+      await uploadUserdataPrivate(userdataPrivateMap);
 
       /* Step 4: 儲存 userdata 和帳戶圖片至本地 */
       progress.update(0.75, '4/4: 寫入資料至本地');
@@ -276,21 +276,19 @@ class _EnrollPageState extends State<EnrollPage> {
       Provider.of<Userdata>(context, listen: false).friendRequests = [];
       Provider.of<Userdata>(context, listen: false).myRequests = [];
       Provider.of<Userdata>(context, listen: false).friends = [];
-      await saveUserdataMapToJson(Provider.of<Userdata>(context).map);
-      if (accountPhoto != null) {
-        Provider.of<Userdata>(context, listen: false).updateAccountPhoto = accountPhoto;
-        await saveAccountPhotoFromFile(accountPhoto!);
+      await saveUserdataMap(Provider.of<Userdata>(context, listen: false).map);
+      if (userphoto != null) {
+        Provider.of<Userdata>(context, listen: false).updateUserphoto = userphoto;
+        await saveUserphoto(userphoto!);
       }
 
       transaction.update(memberCountDoc, {'value': newMemberCount});
     }).then((value) {
       progress.update(1, '大功告成！');
     }).catchError((e) {
-      if (e is PlatformException || e is TimeoutException) {
-        progress.hasError(e.message!);
-      } else {
-        progress.hasError(e.toString());
-      }
+      deleteFile('userdata.json');
+      deleteFile('userphoto.jpg');
+      progress.hasError(e.toString());
     });
   }
 }

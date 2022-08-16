@@ -1,7 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:async';
-
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -41,8 +39,8 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void initPackageInfo() async {
-    packageInfo = await PackageInfo.fromPlatform();
-    setState(() {});
+    PackageInfo info = await PackageInfo.fromPlatform();
+    setState(() => packageInfo = info);
   }
 
   @override
@@ -296,33 +294,15 @@ class _LoginPageState extends State<LoginPage> {
   /* INFO: 登入成功後，若已是成員則從雲端下載資料，否則導向至註冊頁面 */
   Future<void> tasksAfterLogin() async {
     try {
-      Map<String, dynamic>? userdataMap = await fetchUserdataToMap();
+      Map<String, dynamic>? userdataMap = await fetchUserdata();
       if (userdataMap == null) {
         Navigator.pushReplacementNamed(context, '/enroll');
       } else {
         Provider.of<Userdata>(context, listen: false).importFromCloudFirestore = userdataMap;
-        await saveUserdataMapToJson(userdataMap);
-        Provider.of<Userdata>(context, listen: false).updateAccountPhoto = await fetchAccountPhotoToFile();
+        await saveUserdataMap(userdataMap);
+        Provider.of<Userdata>(context, listen: false).updateUserphoto = await downloadUserphoto();
         Navigator.pushReplacementNamed(context, '/main');
       }
-    } on FirebaseException catch (e) {
-      if (e.code == 'storage/object-not-found') {
-        Navigator.pushReplacementNamed(context, '/main');
-      } else {
-        Widgets.alertDialog(
-          context,
-          title: '發生錯誤',
-          content: e.toString(),
-        );
-        setState(() => isWorking = false);
-      }
-    } on TimeoutException catch (e) {
-      Widgets.alertDialog(
-        context,
-        title: '網路連線不佳',
-        content: e.toString(),
-      );
-      Navigator.pushReplacementNamed(context, '/main');
     } catch (e) {
       Widgets.alertDialog(
         context,

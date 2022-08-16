@@ -100,7 +100,7 @@ class _AddFriendPageState extends State<AddFriendPage> {
       return;
     }
 
-    Map? data = await getMemberPublicData(phone);
+    Map? data = await fetchMemberdataPublic(phone);
     setState(() {
       resultDisplayName = (data != null) ? data['displayName'] : null;
       showResultArea = true;
@@ -108,11 +108,7 @@ class _AddFriendPageState extends State<AddFriendPage> {
 
     if (data != null) {
       File? photo;
-      try {
-        photo = await fetchAccountPhotoToFile(phone: phone);
-      } on FirebaseException catch (_) {
-        photo = null;
-      }
+      photo = await downloadMemberphoto(phone);
       setState(() => resultPhoto = photo);
     }
   }

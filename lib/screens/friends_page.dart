@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import '/config/constants.dart';
@@ -24,13 +25,27 @@ class FriendsPage extends StatefulWidget {
 }
 
 class _FriendsPageState extends State<FriendsPage> {
+  final phone = FirebaseAuth.instance.currentUser!.phoneNumber;
+  late DocumentReference<Map<String, dynamic>> ref;
+  String? photoDir;
+
   List<bool> expandedFlag = [false, false, true];
 
   @override
-  Widget build(BuildContext context) {
-    final phone = FirebaseAuth.instance.currentUser!.phoneNumber;
-    final ref = FirebaseFirestore.instance.collection('users').doc(phone);
+  void initState() {
+    super.initState();
+    ref = FirebaseFirestore.instance.collection('users').doc(phone);
+    getPhotoDir();
+  }
 
+  Future<void> getPhotoDir() async {
+    final appDir = await getApplicationDocumentsDirectory();
+    setState(() => photoDir = '${appDir.path}/accountPhoto');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (photoDir == null) return const Center(child: Text('loading...'));
     return LayoutBuilder(
       builder: (context, constraints) {
         return ConstrainedBox(
@@ -40,7 +55,7 @@ class _FriendsPageState extends State<FriendsPage> {
             padding: const EdgeInsets.all(10.0),
             child: ExpansionPanelList(
               children: [
-                friendRequestsPanel(ref),
+                friendRequestsPanel(),
                 myRequestsPanel(),
                 friendsPanel(),
               ],
@@ -54,19 +69,19 @@ class _FriendsPageState extends State<FriendsPage> {
     );
   }
 
-  ExpansionPanel friendRequestsPanel(DocumentReference ref) {
+  ExpansionPanel friendRequestsPanel() {
     return ExpansionPanel(
       canTapOnHeader: true,
       isExpanded: expandedFlag[0],
       headerBuilder: (context, isExpanded) {
-        return ListTile(
-          leading: const Icon(
+        return const ListTile(
+          leading: Icon(
             Icons.mark_email_unread,
             color: Palette.secondaryColor,
           ),
           title: Text(
-            '交友邀請確認 (${Provider.of<Userdata>(context).friendRequests!.length})',
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            '交友邀請確認',
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
         );
       },
@@ -87,23 +102,7 @@ class _FriendsPageState extends State<FriendsPage> {
             colChildren.add(const Divider(height: 0));
             colChildren.add(
               ListTile(
-                leading: SizedBox(
-                  width: 50,
-                  height: 50,
-                  child: ClipOval(
-                    child:
-                        // person['hasPhoto']
-                        //     ? FutureBuilder(
-                        //         future: fetchAccountPhotoToFile(phone: person['phone']),
-                        //         initialData: Image.asset('assets/default_account_photo.png'),
-                        //         builder: (context, snapshot) {
-                        //           return Image.file(snapshot.data as File);
-                        //         },
-                        //       )
-                        //     :
-                        Image.asset('assets/default_account_photo.png'),
-                  ),
-                ),
+                leading: accountPhoto(person),
                 title: Text(
                   person['displayName'],
                   style: const TextStyle(fontSize: Constants.defaultTextSize),
@@ -128,35 +127,46 @@ class _FriendsPageState extends State<FriendsPage> {
       canTapOnHeader: true,
       isExpanded: expandedFlag[1],
       headerBuilder: (context, isExpanded) {
-        return ListTile(
-          leading: const Icon(
+        return const ListTile(
+          leading: Icon(
             Icons.schedule_send,
             color: Palette.secondaryColor,
           ),
           title: Text(
-            '我發出的邀請 (${Provider.of<Userdata>(context).myRequests!.length})',
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            '我發出的邀請',
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
         );
       },
-      body: Column(
-        children: const [
-          Divider(height: 0),
-          ListTile(
-            // leading: SizedBox(
-            //   width: 50,
-            //   height: 50,
-            //   child: ClipOval(
-            //     child: Image.file(Provider.of<Userdata>(context).accountPhoto!),
-            //   ),
-            // ),
-            title: Text(
-              'PR',
-              style: TextStyle(fontSize: Constants.defaultTextSize),
-            ),
-            subtitle: Text('+886989030602'),
-          ),
-        ],
+      body: StreamBuilder(
+        stream: ref.collection('myRequests').snapshots(),
+        initialData: Provider.of<Userdata>(context, listen: false).myRequests!,
+        builder: (context, snapshot) {
+          late List resultList;
+          if (snapshot.data is QuerySnapshot) {
+            resultList = (snapshot.data as QuerySnapshot).docs.map((doc) => doc.data()).toList();
+            Provider.of<Userdata>(context, listen: false).myRequests = resultList;
+          } else {
+            resultList = snapshot.data as List;
+          }
+
+          List<Widget> colChildren = [];
+          for (Map<String, dynamic> person in resultList) {
+            colChildren.add(const Divider(height: 0));
+            colChildren.add(
+              ListTile(
+                leading: accountPhoto(person),
+                title: Text(
+                  person['displayName'],
+                  style: const TextStyle(fontSize: Constants.defaultTextSize),
+                ),
+                subtitle: Text(person['phone']),
+              ),
+            );
+          }
+
+          return Column(children: colChildren);
+        },
       ),
     );
   }
@@ -166,35 +176,74 @@ class _FriendsPageState extends State<FriendsPage> {
       canTapOnHeader: true,
       isExpanded: expandedFlag[2],
       headerBuilder: (context, isExpanded) {
-        return ListTile(
-          leading: const Icon(
+        return const ListTile(
+          leading: Icon(
             Icons.people_alt,
             color: Palette.secondaryColor,
           ),
           title: Text(
-            '好友 (${Provider.of<Userdata>(context).friends!.length})',
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            '好友',
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
         );
       },
-      body: Column(
-        children: const [
-          Divider(height: 0),
-          ListTile(
-            // leading: SizedBox(
-            //   width: 50,
-            //   height: 50,
-            //   child: ClipOval(
-            //     child: Image.file(Provider.of<Userdata>(context).accountPhoto!),
-            //   ),
-            // ),
-            title: Text(
-              'PR',
-              style: TextStyle(fontSize: Constants.defaultTextSize),
-            ),
-            subtitle: Text('+886989030602'),
-          ),
-        ],
+      body: StreamBuilder(
+        stream: ref.collection('friends').snapshots(),
+        initialData: Provider.of<Userdata>(context, listen: false).friends!,
+        builder: (context, snapshot) {
+          late List resultList;
+          if (snapshot.data is QuerySnapshot) {
+            resultList = (snapshot.data as QuerySnapshot).docs.map((doc) => doc.data()).toList();
+            Provider.of<Userdata>(context, listen: false).friends = resultList;
+          } else {
+            resultList = snapshot.data as List;
+          }
+
+          List<Widget> colChildren = [];
+          for (Map<String, dynamic> person in resultList) {
+            colChildren.add(const Divider(height: 0));
+            colChildren.add(
+              ListTile(
+                leading: accountPhoto(person),
+                title: Text(
+                  person['displayName'],
+                  style: const TextStyle(fontSize: Constants.defaultTextSize),
+                ),
+                subtitle: Text(person['phone']),
+                trailing: GestureDetector(
+                  child: const Icon(Icons.check_circle, size: 40, color: Colors.green),
+                  onTap: () {},
+                ),
+              ),
+            );
+          }
+
+          return Column(children: colChildren);
+        },
+      ),
+    );
+  }
+
+  SizedBox accountPhoto(Map<String, dynamic> person) {
+    final defaultPhoto = Image.asset('assets/default_account_photo.png');
+    return SizedBox(
+      width: 50,
+      height: 50,
+      child: ClipOval(
+        child: defaultPhoto,
+        // FutureBuilder(
+        //   future: fetchAccountPhotoToFile(phone: person['phone']),
+        //   initialData: defaultPhoto,
+        //   builder: (context, snapshot) {
+        //     if (snapshot.hasError) {
+        //       return defaultPhoto;
+        //     } else if (snapshot.data is File) {
+        //       return Image.file(snapshot.data as File);
+        //     } else {
+        //       return snapshot.data as Image;
+        //     }
+        //   },
+        // ),
       ),
     );
   }

@@ -12,7 +12,7 @@ class Userdata extends ChangeNotifier {
   List? myRequests;
   List? friends;
 
-  File? accountPhoto;
+  File? userphoto;
 
   Userdata({Map<String, dynamic>? map, File? photo}) {
     if (map != null) {
@@ -24,7 +24,7 @@ class Userdata extends ChangeNotifier {
       myRequests = map['myRequests'];
       friends = map['friends'];
     }
-    accountPhoto = photo;
+    userphoto = photo;
     notifyListeners();
   }
 
@@ -63,8 +63,8 @@ class Userdata extends ChangeNotifier {
     notifyListeners();
   }
 
-  set updateAccountPhoto(File? photo) {
-    accountPhoto = photo;
+  set updateUserphoto(File? photo) {
+    userphoto = photo;
     notifyListeners();
   }
 
@@ -73,10 +73,10 @@ class Userdata extends ChangeNotifier {
     enrollTime = null;
     displayName = null;
     realName = null;
-    accountPhoto = null;
-    friends = null;
-    myRequests = null;
     friendRequests = null;
+    myRequests = null;
+    friends = null;
+    userphoto = null;
     notifyListeners();
 
     return this;

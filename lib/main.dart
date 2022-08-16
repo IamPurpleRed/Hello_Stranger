@@ -30,8 +30,9 @@ Future<void> main() async {
   /* INFO: 確認本地端資料 */
   Map<String, dynamic>? userdataMap;
   final appDir = await getApplicationDocumentsDirectory();
+  await Directory('${appDir.path}/accountPhoto').create();
   final userdataFile = File('${appDir.path}/userdata.json');
-  File? accountPhoto = File('${appDir.path}/account_photo.jpg');
+  File? userphotoFile = File('${appDir.path}/userphoto.jpg');
   if (userdataFile.existsSync() && FirebaseAuth.instance.currentUser != null) {
     // NOTE: 本地有 userdata.json，且 Firebase 有 currentUser，登入才成立
     final userdataStr = await userdataFile.readAsString();
@@ -40,22 +41,25 @@ Future<void> main() async {
   } else if (userdataFile.existsSync()) {
     // NOTE: 本地有 userdata.json，但 Firebase 沒有 currentUser
     await userdataFile.delete();
-    if (accountPhoto.existsSync()) {
-      await accountPhoto.delete();
+    if (userphotoFile.existsSync()) {
+      await userphotoFile.delete();
     }
   } else {
     // NOTE: Firebase 有 currentUser，但本地沒有 userdata.json
     await FirebaseAuth.instance.signOut();
+    if (userphotoFile.existsSync()) {
+      await userphotoFile.delete();
+    }
   }
 
-  if (!accountPhoto.existsSync()) {
-    accountPhoto = null;
+  if (!userphotoFile.existsSync()) {
+    userphotoFile = null;
   }
-  /* --- END --- */
+  /* --- 確認本地端資料 END --- */
 
   runApp(
     ChangeNotifierProvider<Userdata>(
-      create: (context) => Userdata(map: userdataMap, photo: accountPhoto),
+      create: (context) => Userdata(map: userdataMap, photo: userphotoFile),
       child: const HelloStranger(),
     ),
   );
