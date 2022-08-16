@@ -1,12 +1,16 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '/components/widgets.dart';
 import '/config/constants.dart';
 import '/config/palette.dart';
+import '/config/userdata.dart';
 import '/utils/firebase_communication.dart';
 
 class AddFriendPage extends StatefulWidget {
@@ -22,6 +26,8 @@ class _AddFriendPageState extends State<AddFriendPage> {
   bool showResultArea = false;
   String? resultDisplayName;
   File? resultPhoto;
+  bool canTapBtn = false;
+  String buttonText = '發送交友請求';
 
   @override
   Widget build(BuildContext context) {
@@ -101,9 +107,41 @@ class _AddFriendPageState extends State<AddFriendPage> {
     }
 
     Map? data = await fetchMemberdataPublic(phone);
+    bool hasFind = false;
+    if (data != null) {
+      if (!hasFind) {
+        for (Map person in Provider.of<Userdata>(context, listen: false).friendRequests!) {
+          if (person['phone'] == phone) {
+            hasFind = true;
+            setState(() => buttonText = '好友已寄邀請');
+            break;
+          }
+        }
+      }
+      if (!hasFind) {
+        for (Map person in Provider.of<Userdata>(context, listen: false).myRequests!) {
+          if (person['phone'] == phone) {
+            hasFind = true;
+            setState(() => buttonText = '等待好友回覆');
+            break;
+          }
+        }
+      }
+      if (!hasFind) {
+        for (Map person in Provider.of<Userdata>(context, listen: false).friends!) {
+          if (person['phone'] == phone) {
+            hasFind = true;
+            setState(() => buttonText = '已經成為好友');
+            break;
+          }
+        }
+      }
+    }
+
     setState(() {
-      resultDisplayName = (data != null) ? data['displayName'] : null;
       showResultArea = true;
+      resultDisplayName = (data != null) ? data['displayName'] : null;
+      canTapBtn = hasFind ? false : true;
     });
 
     if (data != null) {
@@ -151,11 +189,11 @@ class _AddFriendPageState extends State<AddFriendPage> {
         ),
         const SizedBox(height: 30.0),
         ElevatedButton(
-          child: const Text(
-            '送出交友邀請',
-            style: TextStyle(fontSize: Constants.defaultTextSize),
+          onPressed: canTapBtn ? () {} : null,
+          child: Text(
+            buttonText,
+            style: const TextStyle(fontSize: Constants.defaultTextSize),
           ),
-          onPressed: () {},
         ),
       ],
     );
