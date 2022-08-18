@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
@@ -12,10 +11,10 @@ import '/components/main_frame.dart';
 import '/config/constants.dart';
 import '/config/palette.dart';
 import '/config/userdata.dart';
-import '/firebase_options.dart';
 import '/screens/add_friend_page.dart';
 import '/screens/enroll_page.dart';
 import '/screens/login_page.dart';
+import '/utils/firebase_communication.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,9 +22,7 @@ Future<void> main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]); // 鎖定螢幕方向只能為垂直(網頁版不會鎖定)
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await firebaseInit();
 
   /* INFO: 確認本地端資料 */
   Map<String, dynamic>? userdataMap;

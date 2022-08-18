@@ -3,7 +3,10 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:hello_stranger/firebase_options.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '/config/userdata.dart';
@@ -13,6 +16,33 @@ import '/config/userdata.dart';
     - fetch -> 僅下載
     - save -> 僅儲存
 */
+
+/* INFO: App 啟動時針對 Firebase 的初始化工作 */
+Future<void> firebaseInit() async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  final fcmToken = await FirebaseMessaging.instance.getToken();
+  print('token: $fcmToken');
+  NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
+    announcement: true,
+  );
+  print('User granted permission: ${settings.authorizationStatus}');
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print('Got a message whilst in the foreground!');
+    print('Message data: ${message.data}');
+
+    if (message.notification != null) {
+      print('Message also contained a notification: ${message.notification}');
+    }
+  });
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+}
+
+/* INFO: App 在背景執行的通知推播 callback function */
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("Handling a background message: ${message.messageId}");
+}
 
 /* INFO: 從 Cloud Firestore 下載完整使用者資料 */
 Future<Map<String, dynamic>?> fetchUserdata() async {
