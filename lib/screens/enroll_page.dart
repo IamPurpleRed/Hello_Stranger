@@ -3,21 +3,18 @@
 import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hello_stranger/utils/firebase_communication.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
-import '../config/userdata.dart';
 import '/components/widgets.dart';
 import '/components/progress_dialog/progress_dialog.dart';
 import '/components/progress_dialog/progress_dialog_model.dart';
 import '/config/constants.dart';
 import '/config/palette.dart';
-import '/utils/local_storage_communication.dart';
+import '/utils/firebase_communication.dart';
 
 class EnrollPage extends StatefulWidget {
   EnrollPage({Key? key}) : super(key: key);
@@ -87,7 +84,7 @@ class _EnrollPageState extends State<EnrollPage> {
                     ),
                     SizedBox(width: vw * 0.1),
                     ElevatedButton(
-                      onPressed: registerAccount,
+                      onPressed: registerTask,
                       child: const Text(
                         '確認送出',
                         style: TextStyle(fontSize: Constants.defaultTextSize),
@@ -219,7 +216,7 @@ class _EnrollPageState extends State<EnrollPage> {
   }
 
   /* INFO: 註冊帳號 */
-  Future<void> registerAccount() async {
+  Future<void> registerTask() async {
     if (widget.displayNameController.text == '') {
       Widgets.alertDialog(
         context,
@@ -242,52 +239,20 @@ class _EnrollPageState extends State<EnrollPage> {
       },
     );
 
-    final db = FirebaseFirestore.instance;
-    await db.runTransaction((transaction) async {
-      /* Step 1: 取得目前用戶總數 */
-      final memberCountDoc = db.collection('variables').doc('memberCount');
-      final snapshot = await transaction.get(memberCountDoc);
-      final int newMemberCount = snapshot.get('value') + 1;
+    Map<String, dynamic> userdataPublicMap = {
+      'enrollTime': DateTime.now().toUtc(),
+      'displayName': widget.displayNameController.text,
+    };
+    Map<String, dynamic> userdataPrivateMap = {
+      'realName': widget.realNameController.text,
+      'fcmToken': await getFcmToken(),
+    };
 
-      /* Step 2: 準備 userdata */
-      progress.update(0.25, '2/4: 初始用戶資料');
-      Map<String, dynamic> userdataPublicMap = {
-        'id': newMemberCount, // 賦予新用戶之 id = 目前用戶總數 + 1
-        'enrollTime': DateTime.now().toUtc(),
-        'displayName': widget.displayNameController.text,
-      };
-      Map<String, dynamic> userdataPrivateMap = {
-        'realName': widget.realNameController.text,
-      };
-
-      /* Step 3: 上傳 userdata 和帳戶圖片至 Firebase */
-      progress.update(0.5, '3/4: 上傳資料至雲端');
-      if (userphoto != null) {
-        await uploadUserphoto(userphoto!);
-      }
-      uploadUserdataPublic(transaction, userdataPublicMap);
-      uploadUserdataPrivate(transaction, userdataPrivateMap);
-
-      /* Step 4: 儲存 userdata 和帳戶圖片至本地 */
-      progress.update(0.75, '4/4: 寫入資料至本地');
-      Provider.of<Userdata>(context, listen: false).updateUserdataPublic = userdataPublicMap;
-      Provider.of<Userdata>(context, listen: false).updateUserdataPrivate = userdataPrivateMap;
-      Provider.of<Userdata>(context, listen: false).friendRequests = [];
-      Provider.of<Userdata>(context, listen: false).myRequests = [];
-      Provider.of<Userdata>(context, listen: false).friends = [];
-      await saveUserdataMap(Provider.of<Userdata>(context, listen: false).map);
-      if (userphoto != null) {
-        Provider.of<Userdata>(context, listen: false).updateUserphoto = userphoto;
-        await saveUserphoto(userphoto!);
-      }
-
-      transaction.update(memberCountDoc, {'value': newMemberCount});
-    }).then((value) {
-      progress.update(1, '大功告成！');
-    }).catchError((e) {
-      deleteFile('userdata.json');
-      deleteFile('userphoto.jpg');
-      progress.hasError(e.toString());
-    });
+    await registerAccount(
+      context,
+      progress: progress,
+      userdataPublicMap: userdataPublicMap,
+      userdataPrivateMap: userdataPrivateMap,
+    );
   }
 }

@@ -8,6 +8,7 @@ class Userdata extends ChangeNotifier {
   DateTime? enrollTime;
   String? displayName;
   String? realName;
+  String? fcmToken;
   List? friendRequests;
   List? myRequests;
   List? friends;
@@ -20,6 +21,7 @@ class Userdata extends ChangeNotifier {
       enrollTime = map['enrollTime'];
       displayName = map['displayName'];
       realName = map['realName'];
+      fcmToken = map['fcmToken'];
       friendRequests = map['friendRequests'];
       myRequests = map['myRequests'];
       friends = map['friends'];

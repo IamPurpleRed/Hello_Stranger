@@ -299,6 +299,10 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.pushReplacementNamed(context, '/enroll');
       } else {
         Provider.of<Userdata>(context, listen: false).importFromCloudFirestore = userdataMap;
+        final token = await getFcmToken();
+        Provider.of<Userdata>(context, listen: false).fcmToken = token;
+        uploadUserdataPrivate({'fcmToken': token});
+        userdataMap['fcmToken'] = token;
         await saveUserdataMap(userdataMap);
         Provider.of<Userdata>(context, listen: false).updateUserphoto = await downloadUserphoto();
         Navigator.pushReplacementNamed(context, '/main');
