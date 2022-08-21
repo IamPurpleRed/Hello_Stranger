@@ -37,6 +37,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>使用 Hello Stranger 時請務必保持藍芽開啟</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>使用 Hello Stranger 時請務必保持藍芽開啟</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>這樣才能選擇您的酷照片啊</string>
 	<key>UIBackgroundModes</key>
