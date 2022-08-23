@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hello_stranger/utils/firebase_communication.dart';
+import 'package:hello_stranger/utils/local_storage_communication.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -94,6 +95,7 @@ class _FriendsPageState extends State<FriendsPage> {
           if (snapshot.data is QuerySnapshot) {
             resultList = (snapshot.data as QuerySnapshot).docs.map((doc) => doc.data()).toList();
             Provider.of<Userdata>(context, listen: false).friendRequests = resultList;
+            saveUserdataMap(Provider.of<Userdata>(context).map);
           } else {
             resultList = snapshot.data as List;
           }
@@ -147,6 +149,7 @@ class _FriendsPageState extends State<FriendsPage> {
           if (snapshot.data is QuerySnapshot) {
             resultList = (snapshot.data as QuerySnapshot).docs.map((doc) => doc.data()).toList();
             Provider.of<Userdata>(context, listen: false).myRequests = resultList;
+            saveUserdataMap(Provider.of<Userdata>(context).map);
           } else {
             resultList = snapshot.data as List;
           }
@@ -196,6 +199,7 @@ class _FriendsPageState extends State<FriendsPage> {
           if (snapshot.data is QuerySnapshot) {
             resultList = (snapshot.data as QuerySnapshot).docs.map((doc) => doc.data()).toList();
             Provider.of<Userdata>(context, listen: false).friends = resultList;
+            saveUserdataMap(Provider.of<Userdata>(context).map);
           } else {
             resultList = snapshot.data as List;
           }

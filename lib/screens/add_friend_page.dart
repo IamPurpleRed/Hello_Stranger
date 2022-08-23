@@ -163,7 +163,7 @@ class _AddFriendPageState extends State<AddFriendPage> {
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: Constants.defaultTextSize,
-            color: Palette.secondaryGradientColor,
+            color: Palette.secondaryColor,
           ),
         ),
       );

@@ -272,3 +272,15 @@ Future<void> acceptFriendRequest(Map<String, dynamic> map, Userdata userdata) as
 
   await batch.commit();
 }
+
+/* INFO: 建立新訊息 */
+Future<void> createMessage(String friendPhone, String content) async {
+  final db = FirebaseFirestore.instance;
+  final batch = db.batch();
+  final myPhone = FirebaseAuth.instance.currentUser!.phoneNumber;
+  final ref = db.collection('users').doc(myPhone).collection('friends').doc(friendPhone);
+
+  batch.update(ref, {'message': content});
+
+  await batch.commit();
+}

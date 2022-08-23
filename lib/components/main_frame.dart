@@ -40,7 +40,7 @@ class _MainFrameState extends State<MainFrame> {
                     color: Colors.white,
                   ),
                 ),
-                onPressed: () {},
+                onPressed: () => Navigator.pushNamed(context, '/main/newMessage'),
               ),
             ),
             floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

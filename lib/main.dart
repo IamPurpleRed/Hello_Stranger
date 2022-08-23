@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hello_stranger/screens/new_message_page.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -115,6 +116,7 @@ class HelloStranger extends StatelessWidget {
         '/enroll': (context) => EnrollPage(),
         '/main': (context) => const MainFrame(),
         '/main/addFriend': (context) => AddFriendPage(),
+        '/main/newMessage': (context) => NewMessagePage(),
       },
     );
   }
