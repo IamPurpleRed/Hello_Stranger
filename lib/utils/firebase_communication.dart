@@ -260,6 +260,8 @@ Future<void> acceptFriendRequest(Map<String, dynamic> map, Userdata userdata) as
   final myPhone = FirebaseAuth.instance.currentUser!.phoneNumber;
   final myRef = db.collection('users').doc(myPhone);
   final targetRef = db.collection('users').doc(map['phone']);
+  final chatroomRef = db.collection('chatrooms').doc();
+  map['chatroom'] = chatroomRef.id;
 
   batch.delete(myRef.collection('friendRequests').doc(map['phone']));
   batch.delete(targetRef.collection('myRequests').doc(myPhone));
@@ -268,6 +270,10 @@ Future<void> acceptFriendRequest(Map<String, dynamic> map, Userdata userdata) as
     'phone': myPhone,
     'displayName': userdata.displayName,
     'realName': userdata.realName,
+    'chatroom': chatroomRef.id,
+  });
+  batch.set(chatroomRef, {
+    'members': [myPhone, map['phone']],
   });
 
   await batch.commit();
