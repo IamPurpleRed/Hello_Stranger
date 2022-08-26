@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -27,8 +28,8 @@ class FriendsPage extends StatefulWidget {
 
 class _FriendsPageState extends State<FriendsPage> {
   String? photoDir;
-
   List<bool> expandedFlag = [false, false, true];
+  bool isAccepting = false;
 
   @override
   void initState() {
@@ -112,15 +113,29 @@ class _FriendsPageState extends State<FriendsPage> {
                 trailing: GestureDetector(
                   child: const Icon(Icons.check_circle, size: 40, color: Colors.green),
                   onTap: () async {
-                    Userdata userdata = Provider.of<Userdata>(context, listen: false);
-                    await FirebaseFunctions.instance.httpsCallable('acceptFriendRequest').call({
-                      'requester': person,
-                      'recipient': {
-                        'phone': userdata.phone,
-                        'displayName': userdata.displayName,
-                        'realName': userdata.realName,
-                      },
-                    });
+                    if (!isAccepting) {
+                      setState(() => isAccepting = true);
+                      Userdata userdata = Provider.of<Userdata>(context, listen: false);
+                      await FirebaseFunctions.instanceFor(region: 'asia-east1').httpsCallable('acceptFriendRequest').call({
+                        'requester': person,
+                        'recipient': {
+                          'phone': userdata.phone,
+                          'displayName': userdata.displayName,
+                          'realName': userdata.realName,
+                        },
+                      }).then((res) {
+                        Fluttertoast.showToast(
+                          msg: (res.data['code'] == 0) ? '成功接受${person['displayName']}的交友邀請' : '哎呀！伺服器出了點問題...',
+                          timeInSecForIosWeb: 3,
+                        );
+                      }).catchError((e) {
+                        Fluttertoast.showToast(
+                          msg: '發生錯誤，請檢查您的網路連線',
+                          timeInSecForIosWeb: 3,
+                        );
+                      });
+                      setState(() => isAccepting = false);
+                    }
                   },
                 ),
               ),

@@ -59,13 +59,15 @@ class _NewMessagePageState extends State<NewMessagePage> {
         const SizedBox(height: 20.0),
         Expanded(
           child: (friendList.isEmpty)
-              ? const AutoSizeText(
-                  '您目前還沒有好友',
-                  maxLines: 1,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: Constants.defaultTextSize,
-                    color: Palette.secondaryColor,
+              ? const Center(
+                  child: AutoSizeText(
+                    '您目前還沒有好友',
+                    maxLines: 1,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: Constants.defaultTextSize,
+                      color: Palette.secondaryColor,
+                    ),
                   ),
                 )
               : ListView.builder(
