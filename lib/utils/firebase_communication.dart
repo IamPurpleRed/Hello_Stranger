@@ -190,7 +190,8 @@ Future<File?> downloadUserphoto() async {
   try {
     await photoRef.writeToFile(jpg);
   } on FirebaseException catch (e) {
-    await jpg.delete();
+    if (jpg.existsSync()) await jpg.delete();
+
     if (e.code == 'object-not-found') {
       return null;
     } else {
@@ -223,7 +224,8 @@ Future<File?> downloadMemberphoto(String phone) async {
   try {
     await photoRef.writeToFile(jpg);
   } on FirebaseException catch (e) {
-    await jpg.delete();
+    if (jpg.existsSync()) await jpg.delete();
+
     if (e.code == 'object-not-found') {
       return null;
     }

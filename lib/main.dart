@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hello_stranger/screens/new_message_page.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -15,6 +14,7 @@ import '/config/userdata.dart';
 import '/screens/add_friend_page.dart';
 import '/screens/enroll_page.dart';
 import '/screens/login_page.dart';
+import '/screens/new_message_page.dart';
 import '/utils/firebase_communication.dart';
 
 Future<void> main() async {

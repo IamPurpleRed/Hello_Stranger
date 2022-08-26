@@ -171,13 +171,13 @@ class _NewMessagePageState extends State<NewMessagePage> {
                   await createMessage(selectedFriend!['phone'], widget.msgController.text);
                   await saveUserdataMap(Provider.of<Userdata>(context).map);
                 } catch (e) {
-                  Fluttertoast.showToast(
-                    msg: '訊息建立成功',
-                    timeInSecForIosWeb: 3,
-                  );
                   Widgets.alertDialog(context, title: '發生錯誤', content: e.toString());
                   return;
                 }
+                Fluttertoast.showToast(
+                  msg: '訊息建立成功',
+                  timeInSecForIosWeb: 3,
+                );
                 Navigator.pop(context);
               },
               child: isWorking

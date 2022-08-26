@@ -6,6 +6,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 
 import '/components/widgets.dart';
@@ -202,6 +203,10 @@ class _AddFriendPageState extends State<AddFriendPage> {
                         restrict = true;
                         buttonText = '已送出邀請';
                       });
+                      Fluttertoast.showToast(
+                        msg: '成功送出交友邀請',
+                        timeInSecForIosWeb: 3,
+                      );
                     }
                   : null,
               child: isWorking
