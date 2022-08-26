@@ -3,7 +3,6 @@
 import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -101,7 +100,7 @@ class _AddFriendPageState extends State<AddFriendPage> {
     }
 
     String phone = '+886${widget.phoneController.text.substring(1)}';
-    if (phone == FirebaseAuth.instance.currentUser!.phoneNumber) {
+    if (phone == Provider.of<Userdata>(context, listen: false).phone) {
       Widgets.alertDialog(
         context,
         title: '我知道你在想什麼',

@@ -11,6 +11,7 @@ dependencies:
     sdk: flutter
   auto_size_text: ^3.0.0 # 自動調整字體大小
   cloud_firestore: ^3.4.6 # Firebase Firestore Database
+  cloud_functions: ^3.3.6 # Firebase Cloud Functions
   cupertino_icons: ^1.0.5
   firebase_analytics: ^9.3.3
   firebase_auth: ^3.7.0 # Firebase Authentication

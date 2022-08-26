@@ -1,14 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
-import 'package:hello_stranger/utils/firebase_communication.dart';
-import 'package:hello_stranger/utils/local_storage_communication.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import '/config/constants.dart';
 import '/config/palette.dart';
 import '/config/userdata.dart';
+import '/utils/local_storage_communication.dart';
 
 class FriendsPage extends StatefulWidget {
   const FriendsPage({Key? key}) : super(key: key);
@@ -27,8 +26,6 @@ class FriendsPage extends StatefulWidget {
 }
 
 class _FriendsPageState extends State<FriendsPage> {
-  final phone = FirebaseAuth.instance.currentUser!.phoneNumber;
-  late DocumentReference<Map<String, dynamic>> ref;
   String? photoDir;
 
   List<bool> expandedFlag = [false, false, true];
@@ -36,7 +33,6 @@ class _FriendsPageState extends State<FriendsPage> {
   @override
   void initState() {
     super.initState();
-    ref = FirebaseFirestore.instance.collection('users').doc(phone);
     getPhotoDir();
   }
 
@@ -47,6 +43,8 @@ class _FriendsPageState extends State<FriendsPage> {
 
   @override
   Widget build(BuildContext context) {
+    var ref = FirebaseFirestore.instance.collection('users').doc(Provider.of<Userdata>(context, listen: false).phone);
+
     if (photoDir == null) return const Center(child: Text('loading...'));
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -57,9 +55,9 @@ class _FriendsPageState extends State<FriendsPage> {
             padding: const EdgeInsets.all(10.0),
             child: ExpansionPanelList(
               children: [
-                friendRequestsPanel(),
-                myRequestsPanel(),
-                friendsPanel(),
+                friendRequestsPanel(ref),
+                myRequestsPanel(ref),
+                friendsPanel(ref),
               ],
               expansionCallback: (panelIndex, isExpanded) {
                 setState(() => expandedFlag[panelIndex] = !expandedFlag[panelIndex]);
@@ -71,7 +69,7 @@ class _FriendsPageState extends State<FriendsPage> {
     );
   }
 
-  ExpansionPanel friendRequestsPanel() {
+  ExpansionPanel friendRequestsPanel(DocumentReference<Map<String, dynamic>> ref) {
     return ExpansionPanel(
       canTapOnHeader: true,
       isExpanded: expandedFlag[0],
@@ -113,7 +111,17 @@ class _FriendsPageState extends State<FriendsPage> {
                 subtitle: Text(person['phone']),
                 trailing: GestureDetector(
                   child: const Icon(Icons.check_circle, size: 40, color: Colors.green),
-                  onTap: () => acceptFriendRequest(person, Provider.of<Userdata>(context, listen: false)),
+                  onTap: () async {
+                    Userdata userdata = Provider.of<Userdata>(context, listen: false);
+                    await FirebaseFunctions.instance.httpsCallable('acceptFriendRequest').call({
+                      'requester': person,
+                      'recipient': {
+                        'phone': userdata.phone,
+                        'displayName': userdata.displayName,
+                        'realName': userdata.realName,
+                      },
+                    });
+                  },
                 ),
               ),
             );
@@ -125,7 +133,7 @@ class _FriendsPageState extends State<FriendsPage> {
     );
   }
 
-  ExpansionPanel myRequestsPanel() {
+  ExpansionPanel myRequestsPanel(DocumentReference<Map<String, dynamic>> ref) {
     return ExpansionPanel(
       canTapOnHeader: true,
       isExpanded: expandedFlag[1],
@@ -175,7 +183,7 @@ class _FriendsPageState extends State<FriendsPage> {
     );
   }
 
-  ExpansionPanel friendsPanel() {
+  ExpansionPanel friendsPanel(DocumentReference<Map<String, dynamic>> ref) {
     return ExpansionPanel(
       canTapOnHeader: true,
       isExpanded: expandedFlag[2],

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Userdata extends ChangeNotifier {
@@ -41,6 +42,8 @@ class Userdata extends ChangeNotifier {
       'friends': friends,
     };
   }
+
+  String get phone => FirebaseAuth.instance.currentUser!.phoneNumber!;
 
   set importFromCloudFirestore(Map<String, dynamic> map) {
     id = map['id'];

@@ -28,18 +28,8 @@ Future<void> firebaseInit() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
-    announcement: true,
-  );
-  print('User granted permission: ${settings.authorizationStatus}');
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('Got a message whilst in the foreground!');
-    print('Message data: ${message.data}');
-
-    if (message.notification != null) {
-      print('Message also contained a notification: ${message.notification}');
-    }
-  });
+  await FirebaseMessaging.instance.requestPermission(announcement: true);
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {});
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 }
 
@@ -50,9 +40,7 @@ Future<String?> getFcmToken() async {
 }
 
 /* INFO: App 在背景執行的通知推播 callback function */
-Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("Handling a background message: ${message.messageId}");
-}
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {}
 
 /* INFO: 從 Cloud Firestore 下載完整使用者資料 */
 Future<Map<String, dynamic>?> fetchUserdata() async {
@@ -250,32 +238,6 @@ Future<void> sendMyRequest(Map<String, dynamic> map, Userdata userdata) async {
     'phone': myPhone,
     'displayName': userdata.displayName,
     'realName': userdata.realName,
-  });
-
-  await batch.commit();
-}
-
-/* INFO: 接受交友邀請 */
-Future<void> acceptFriendRequest(Map<String, dynamic> map, Userdata userdata) async {
-  final db = FirebaseFirestore.instance;
-  final batch = db.batch();
-  final myPhone = FirebaseAuth.instance.currentUser!.phoneNumber;
-  final myRef = db.collection('users').doc(myPhone);
-  final targetRef = db.collection('users').doc(map['phone']);
-  final chatroomRef = db.collection('chatrooms').doc();
-  map['chatroom'] = chatroomRef.id;
-
-  batch.delete(myRef.collection('friendRequests').doc(map['phone']));
-  batch.delete(targetRef.collection('myRequests').doc(myPhone));
-  batch.set(myRef.collection('friends').doc(map['phone']), map);
-  batch.set(targetRef.collection('friends').doc(myPhone), {
-    'phone': myPhone,
-    'displayName': userdata.displayName,
-    'realName': userdata.realName,
-    'chatroom': chatroomRef.id,
-  });
-  batch.set(chatroomRef, {
-    'members': [myPhone, map['phone']],
   });
 
   await batch.commit();
