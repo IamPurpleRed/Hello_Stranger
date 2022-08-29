@@ -15,6 +15,7 @@ import '/screens/add_friend_page.dart';
 import '/screens/enroll_page.dart';
 import '/screens/login_page.dart';
 import '/screens/new_message_page.dart';
+import '/screens/tour_mode_page.dart';
 import '/utils/firebase_communication.dart';
 
 Future<void> main() async {
@@ -117,6 +118,7 @@ class HelloStranger extends StatelessWidget {
         '/main': (context) => const MainFrame(),
         '/main/addFriend': (context) => AddFriendPage(),
         '/main/newMessage': (context) => NewMessagePage(),
+        '/main/tourMode': (context) => const TourModePage(),
       },
     );
   }

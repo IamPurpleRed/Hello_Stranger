@@ -27,6 +27,7 @@ dependencies:
   path_provider: ^2.0.11 # 本地檔案讀寫
   pin_code_fields: ^7.4.0 # 手機認證碼區塊
   provider: ^6.0.3
+  qr_code_scanner: ^1.0.1
 
 
 dev_dependencies:

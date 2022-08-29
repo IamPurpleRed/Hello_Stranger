@@ -210,7 +210,7 @@ class _LoginPageState extends State<LoginPage> {
           style: TextStyle(fontSize: Constants.contentSize),
           maxLines: 2,
         ),
-        const SizedBox(height: 30.0),
+        const SizedBox(height: 20.0),
         Expanded(
           child: PinCodeTextField(
             appContext: context,

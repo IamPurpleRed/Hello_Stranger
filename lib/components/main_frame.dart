@@ -33,14 +33,11 @@ class _MainFrameState extends State<MainFrame> {
               height: vh * 0.18,
               child: FloatingActionButton(
                 backgroundColor: Palette.primaryColor,
-                child: LayoutBuilder(
-                  builder: (context, constraints) => Icon(
-                    Icons.add_comment,
-                    size: constraints.maxWidth - 30,
-                    color: Colors.white,
-                  ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.asset('assets/app_logo_foreground.png'),
                 ),
-                onPressed: () => Navigator.pushNamed(context, '/main/newMessage'),
+                onPressed: () => Navigator.pushNamed(context, '/main/tourMode'),
               ),
             ),
             floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
