@@ -1,10 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:io';
-
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:hello_stranger/config/constants.dart';
 import 'package:hello_stranger/config/palette.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
@@ -19,17 +16,6 @@ class TourModePage extends StatefulWidget {
 class _TourModePageState extends State<TourModePage> {
   QRViewController? qrController;
   String? url;
-  FlutterReactiveBle? ble;
-
-  @override
-  void reassemble() {
-    super.reassemble();
-    if (Platform.isAndroid) {
-      qrController!.pauseCamera();
-    } else if (Platform.isIOS) {
-      qrController!.resumeCamera();
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,9 +92,7 @@ class _TourModePageState extends State<TourModePage> {
                     width: vw * 0.8,
                     child: ElevatedButton(
                       onPressed: () {
-                        setState(() {
-                          ble = FlutterReactiveBle();
-                        });
+                        Navigator.pushNamed(context, '/main/tourMode/touring');
                       },
                       child: const Text(
                         '一般導覽',
@@ -157,7 +141,6 @@ class _TourModePageState extends State<TourModePage> {
                       Navigator.pop(context);
                       setState(() {
                         url = scanData.code;
-                        ble = FlutterReactiveBle();
                       });
                     }
                   });
