@@ -1,9 +1,13 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:io';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:hello_stranger/components/widgets.dart';
 import 'package:hello_stranger/config/constants.dart';
 import 'package:hello_stranger/config/palette.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 class TourModePage extends StatefulWidget {
@@ -20,7 +24,6 @@ class _TourModePageState extends State<TourModePage> {
   @override
   Widget build(BuildContext context) {
     final double vw = MediaQuery.of(context).size.width;
-    final double vh = MediaQuery.of(context).size.width;
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).requestFocus(FocusNode()), // 點擊螢幕任一處以轉移焦點
@@ -68,7 +71,18 @@ class _TourModePageState extends State<TourModePage> {
                   ),
                   const SizedBox(height: 8.0),
                   ElevatedButton(
-                    onPressed: () => showScanner(vw),
+                    onPressed: () async {
+                      if (!await permission()) {
+                        Widgets.alertDialog(
+                          context,
+                          title: '無法進入導覽模式',
+                          content: '請至設定允許 Hello Stranger 相關權限，才能開始使用喔',
+                        );
+
+                        return;
+                      }
+                      showScanner(vw);
+                    },
                     child: SizedBox(
                       width: vw * 0.8,
                       child: const Text(
@@ -91,7 +105,17 @@ class _TourModePageState extends State<TourModePage> {
                   SizedBox(
                     width: vw * 0.8,
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
+                        if (!await permission()) {
+                          Widgets.alertDialog(
+                            context,
+                            title: '無法進入導覽模式',
+                            content: '請至設定允許 Hello Stranger 相關權限，才能開始使用喔',
+                          );
+
+                          return;
+                        }
+
                         Navigator.pushNamed(context, '/main/tourMode/touring');
                       },
                       child: const Text(
@@ -108,6 +132,41 @@ class _TourModePageState extends State<TourModePage> {
         ),
       ),
     );
+  }
+
+  Future<bool> permission() async {
+    if (Platform.isAndroid) {
+      List<bool> status = [
+        await Permission.bluetoothScan.status.isGranted,
+        await Permission.bluetoothConnect.status.isGranted,
+        await Permission.location.status.isGranted,
+      ];
+
+      if (!status[0]) {
+        if (await Permission.bluetoothScan.isPermanentlyDenied) {
+          return false;
+        }
+        status[0] = await Permission.bluetoothScan.request().isGranted;
+      }
+
+      if (!status[1]) {
+        if (await Permission.bluetoothConnect.isPermanentlyDenied) {
+          return false;
+        }
+        status[1] = await Permission.bluetoothConnect.request().isGranted;
+      }
+
+      if (!status[2]) {
+        if (await Permission.location.isPermanentlyDenied) {
+          return false;
+        }
+        status[2] = await Permission.location.request().isGranted;
+      }
+
+      return (status[0] && status[1] && status[2]) ? true : false;
+    } else {
+      return true;
+    }
   }
 
   void showScanner(double vh) {
