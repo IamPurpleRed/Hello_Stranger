@@ -11,11 +11,8 @@ import '/components/main_frame.dart';
 import '/config/constants.dart';
 import '/config/palette.dart';
 import '/config/userdata.dart';
-import '/screens/add_friend_page.dart';
 import '/screens/enroll_page.dart';
 import '/screens/login_page.dart';
-import '/screens/new_message_page.dart';
-import '/screens/tour_mode_page.dart';
 import '/screens/touring_page.dart';
 import '/utils/firebase_communication.dart';
 
@@ -117,10 +114,7 @@ class HelloStranger extends StatelessWidget {
         '/login': (context) => LoginPage(),
         '/enroll': (context) => EnrollPage(),
         '/main': (context) => const MainFrame(),
-        '/main/addFriend': (context) => AddFriendPage(),
-        '/main/newMessage': (context) => NewMessagePage(),
-        '/main/tourMode': (context) => const TourModePage(),
-        '/main/tourMode/touring': (context) => TouringPage(),
+        '/main/touring': (context) => TouringPage(),
       },
     );
   }

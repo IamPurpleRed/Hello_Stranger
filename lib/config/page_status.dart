@@ -1,37 +1,28 @@
 import 'package:flutter/material.dart';
 
-import '/screens/friends_page.dart';
+import '/screens/history_page.dart';
 import '/screens/home_page.dart';
-import '/screens/messages_page.dart';
+import '/screens/more_info_page.dart';
 
 class PageStatus extends ChangeNotifier {
   /* INFO: private static variables */
-  static const List<String> _title = [
+  static const List<String> title = [
     'Hello Stranger',
-    '訊息',
-    '好友名單',
+    '歷史足跡',
     '更多',
   ];
 
   static const List<Widget> _pageBody = [
     HomePage(),
-    MessagesPage(),
-    FriendsPage(),
-    HomePage(),
+    HistoryPage(),
+    MoreInfoPage(),
   ];
 
   /* INFO: public static variables */
-  static const List<IconData> navIcon = [
-    Icons.home,
-    Icons.forum,
-    Icons.people_alt,
+  static const List<IconData?> navIcon = [
+    null,
+    Icons.directions_walk,
     Icons.more_horiz,
-  ];
-  static const List<String> navTitle = [
-    '首頁',
-    '訊息',
-    '好友',
-    '更多',
   ];
 
   /* INFO: variables */
@@ -39,7 +30,7 @@ class PageStatus extends ChangeNotifier {
 
   /* INFO: getters */
   int get currentIndex => _currentIndex;
-  String get title => _title[_currentIndex];
+  String get currentTitle => title[_currentIndex];
   Widget get pageBody => _pageBody[_currentIndex];
 
   /* INFO: setters */
@@ -51,10 +42,6 @@ class PageStatus extends ChangeNotifier {
 
   /* INFO: 取得當前頁面的 AppBar actions */
   List<Widget> getAppBarActions(BuildContext context) {
-    if (_currentIndex == 2) {
-      return FriendsPage.appBarActions(context);
-    }
-
     return [];
   }
 }

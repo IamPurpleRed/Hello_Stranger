@@ -24,7 +24,7 @@ class _MainFrameState extends State<MainFrame> {
         builder: (context, pageStatus, child) {
           return Scaffold(
             appBar: AppBar(
-              title: Text(pageStatus.title),
+              title: Text(pageStatus.currentTitle),
               actions: pageStatus.getAppBarActions(context),
             ),
             body: pageStatus.pageBody,
@@ -32,12 +32,12 @@ class _MainFrameState extends State<MainFrame> {
               width: vw * 0.18,
               height: vh * 0.18,
               child: FloatingActionButton(
-                backgroundColor: Palette.primaryColor,
+                backgroundColor: (pageStatus.currentIndex == 0) ? Palette.secondaryColor : Palette.primaryColor,
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Image.asset('assets/app_logo_foreground.png'),
                 ),
-                onPressed: () => Navigator.pushNamed(context, '/main/tourMode'),
+                onPressed: () => pageStatus.currentIndex = 0,
               ),
             ),
             floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -60,23 +60,11 @@ class _MainFrameState extends State<MainFrame> {
           children: [
             SizedBox(
               width: vw * 0.4,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  bottomAppBarItem(vw, pageStatus, 0),
-                  bottomAppBarItem(vw, pageStatus, 1),
-                ],
-              ),
+              child: bottomAppBarItem(vw, pageStatus, 1),
             ),
             SizedBox(
               width: vw * 0.4,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  bottomAppBarItem(vw, pageStatus, 2),
-                  bottomAppBarItem(vw, pageStatus, 3),
-                ],
-              ),
+              child: bottomAppBarItem(vw, pageStatus, 2),
             ),
           ],
         ),
@@ -100,7 +88,7 @@ class _MainFrameState extends State<MainFrame> {
               color: flag ? Palette.secondaryColor : Colors.grey,
             ),
             AutoSizeText(
-              PageStatus.navTitle[index],
+              PageStatus.title[index],
               style: TextStyle(
                 color: flag ? Palette.secondaryColor : Colors.grey,
               ),

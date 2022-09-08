@@ -193,8 +193,8 @@ class _EnrollPageState extends State<EnrollPage> {
             controller: widget.displayNameController,
             style: const TextStyle(fontSize: Constants.defaultTextSize),
             decoration: const InputDecoration(
-              labelText: '暱稱 (必填)',
-              hintText: '公開顯示的名稱',
+              labelText: '暱稱',
+              hintText: '必填欄位',
               prefixIcon: Icon(Icons.person),
             ),
           ),
@@ -205,8 +205,8 @@ class _EnrollPageState extends State<EnrollPage> {
             controller: widget.realNameController,
             style: const TextStyle(fontSize: Constants.defaultTextSize),
             decoration: const InputDecoration(
-              labelText: '真實姓名 (選填)',
-              hintText: '方便好友辨認',
+              labelText: '真實姓名',
+              hintText: '選填欄位',
               prefixIcon: Icon(Icons.badge),
             ),
           ),

@@ -10,14 +10,14 @@ dependencies:
   flutter:
     sdk: flutter
   auto_size_text: ^3.0.0 # 自動調整字體大小
-  cloud_firestore: ^3.4.6 # Firebase Firestore Database
-  cloud_functions: ^3.3.6 # Firebase Cloud Functions
+  cloud_firestore: ^3.4.7 # Firebase Firestore Database
+  cloud_functions: ^3.3.7 # Firebase Cloud Functions
   cupertino_icons: ^1.0.5
-  firebase_analytics: ^9.3.3
-  firebase_auth: ^3.7.0 # Firebase Authentication
-  firebase_core: ^1.21.1 # Firebase
-  firebase_messaging: ^12.0.3 # Firebase Cloud Messaging
-  firebase_storage: ^10.3.7 # Firebase Cloud Storage
+  firebase_analytics: ^9.3.4
+  firebase_auth: ^3.8.0 # Firebase Authentication
+  firebase_core: ^1.22.0 # Firebase
+  firebase_messaging: ^13.0.1 # Firebase Cloud Messaging
+  firebase_storage: ^10.3.8 # Firebase Cloud Storage
   flutter_spinkit: ^5.1.0 # 按鈕載入動畫
   flutter_reactive_ble: ^5.0.2
   fluttertoast: ^8.0.9 # toast
