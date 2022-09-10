@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,7 +15,6 @@ import '/config/constants.dart';
 import '/config/palette.dart';
 import '/config/userdata.dart';
 import '/utils/firebase_communication.dart';
-import '/utils/local_storage_communication.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key? key}) : super(key: key);
@@ -28,7 +28,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   PackageInfo? packageInfo;
   bool isPhoneInputArea = true; // 若為 true 則顯示手機輸入介面，false 則顯示驗證碼輸入介面
-  bool isWorking = false; // 是否讓 button 顯示載入動畫
+  bool isWorking = false; // 若為 true，需 disable 所有按鈕 & 讓 button 顯示載入動畫
   String verificationId = ''; // 當使用者成功送出手機號碼後，將會從 Firebase 取得
   String otpCode = '';
 
@@ -291,26 +291,33 @@ class _LoginPageState extends State<LoginPage> {
     await tasksAfterLogin();
   }
 
-  /* INFO: 登入成功後，若已是成員則從雲端下載資料，否則導向至註冊頁面 */
+  /* INFO: 登入成功後，若已是成員則從 Firebase 下載資料，否則導向至註冊頁面 */
   Future<void> tasksAfterLogin() async {
     try {
-      Map<String, dynamic>? userdataMap = await fetchUserdata();
-      if (userdataMap == null) {
+      final loginRes = await FirebaseFunctions.instanceFor(region: 'asia-east1').httpsCallable('login').call({
+        'phone': getPhone(),
+        'fcmToken': await getFcmToken(),
+      });
+      if (loginRes.data['code'] == 1) {
+        throw Exception('雲端函式發生錯誤');
+      } else if (loginRes.data['code'] == 2) {
         Navigator.pushReplacementNamed(context, '/enroll');
-      } else {
-        Provider.of<Userdata>(context, listen: false).importFromCloudFirestore = userdataMap;
-        final token = await getFcmToken();
-        Provider.of<Userdata>(context, listen: false).fcmToken = token;
-        uploadUserdataPrivate({'fcmToken': token});
-        userdataMap['fcmToken'] = token;
-        await saveUserdataMap(userdataMap);
-        Provider.of<Userdata>(context, listen: false).updateUserphoto = await downloadUserphoto();
-        Navigator.pushReplacementNamed(context, '/main');
+        return;
       }
+
+      Provider.of<Userdata>(context, listen: false).importFromFirebase = loginRes.data['userdata'];
+      if (loginRes.data['userdata']['hasPhoto']) {
+        final userphotoFile = await downloadUserphoto().catchError((e) {
+          throw e;
+        });
+        Provider.of<Userdata>(context, listen: false).updateUserphoto = userphotoFile;
+      }
+
+      Navigator.pushReplacementNamed(context, '/main');
     } catch (e) {
       Widgets.alertDialog(
         context,
-        title: '發生錯誤',
+        title: '糟糕',
         content: e.toString(),
       );
       setState(() => isWorking = false);

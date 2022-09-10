@@ -3,18 +3,21 @@
 import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import '/config/userdata.dart';
 import '/components/widgets.dart';
 import '/components/progress_dialog/progress_dialog.dart';
 import '/components/progress_dialog/progress_dialog_model.dart';
 import '/config/constants.dart';
 import '/config/palette.dart';
 import '/utils/firebase_communication.dart';
+import '/utils/local_storage_communication.dart';
 
 class EnrollPage extends StatefulWidget {
   EnrollPage({Key? key}) : super(key: key);
@@ -193,8 +196,7 @@ class _EnrollPageState extends State<EnrollPage> {
             controller: widget.displayNameController,
             style: const TextStyle(fontSize: Constants.defaultTextSize),
             decoration: const InputDecoration(
-              labelText: '暱稱',
-              hintText: '必填欄位',
+              labelText: '暱稱 (必填)',
               prefixIcon: Icon(Icons.person),
             ),
           ),
@@ -205,8 +207,7 @@ class _EnrollPageState extends State<EnrollPage> {
             controller: widget.realNameController,
             style: const TextStyle(fontSize: Constants.defaultTextSize),
             decoration: const InputDecoration(
-              labelText: '真實姓名',
-              hintText: '選填欄位',
+              labelText: '真實姓名 (選填)',
               prefixIcon: Icon(Icons.badge),
             ),
           ),
@@ -227,7 +228,7 @@ class _EnrollPageState extends State<EnrollPage> {
       return;
     }
 
-    var progress = ProgressDialogModel(0, '1/4: 與雲端建立連線');
+    var progress = ProgressDialogModel(0, '向伺服器發送註冊請求');
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -239,20 +240,42 @@ class _EnrollPageState extends State<EnrollPage> {
       },
     );
 
-    Map<String, dynamic> userdataPublicMap = {
-      'enrollTime': DateTime.now().toUtc(),
-      'displayName': widget.displayNameController.text,
-    };
-    Map<String, dynamic> userdataPrivateMap = {
-      'realName': widget.realNameController.text,
-      'fcmToken': await getFcmToken(),
-    };
+    try {
+      final enrollRes = await FirebaseFunctions.instanceFor(region: 'asia-east1').httpsCallable('enroll').call({
+        'phone': getPhone(),
+        'displayName': widget.displayNameController.text,
+        'realName': widget.realNameController.text,
+        'fcmToken': await getFcmToken(),
+        'hasPhoto': (userphoto != null),
+      });
+      if (enrollRes.data['code'] == 1) {
+        throw Exception('雲端函式發生錯誤');
+      }
 
-    await registerAccount(
-      context,
-      progress: progress,
-      userdataPublicMap: userdataPublicMap,
-      userdataPrivateMap: userdataPrivateMap,
-    );
+      progress.update(0.25, '上傳帳戶圖片');
+      if (userphoto != null) {
+        await uploadUserphoto(userphoto!);
+      }
+
+      progress.update(0.5, '驗證註冊資料');
+      final loginRes = await FirebaseFunctions.instanceFor(region: 'asia-east1').httpsCallable('login').call({
+        'phone': getPhone(),
+        'fcmToken': await getFcmToken(),
+      });
+      if (loginRes.data['code'] == 1) {
+        throw Exception('雲端函式發生錯誤');
+      }
+      Provider.of<Userdata>(context, listen: false).importFromFirebase = loginRes.data['userdata'];
+
+      progress.update(0.75, '寫入資料至本地');
+      if (userphoto != null) {
+        Provider.of<Userdata>(context, listen: false).updateUserphoto = userphoto;
+        await saveUserphoto(userphoto!);
+      }
+
+      progress.update(1, '大功告成！');
+    } catch (e) {
+      progress.hasError(e.toString());
+    }
   }
 }

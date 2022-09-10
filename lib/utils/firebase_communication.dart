@@ -3,17 +3,11 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
 
-import '/components/progress_dialog/progress_dialog_model.dart';
-import '/config/userdata.dart';
 import '/firebase_options.dart';
 import '/utils/local_storage_communication.dart';
 
@@ -33,127 +27,32 @@ Future<void> firebaseInit() async {
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 }
 
-/* INFO: 取得 FCM token */
-Future<String?> getFcmToken() async {
-  final fcmToken = await FirebaseMessaging.instance.getToken();
-  return fcmToken;
-}
-
 /* INFO: App 在背景執行的通知推播 callback function */
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {}
 
-/* INFO: 從 Cloud Firestore 下載完整使用者資料 */
-Future<Map<String, dynamic>?> fetchUserdata() async {
-  final db = FirebaseFirestore.instance;
-  final phone = FirebaseAuth.instance.currentUser!.phoneNumber;
-  final ref = db.collection('users').doc(phone);
+/* INFO: 取得 Firebase 登入狀態 */
+FirebaseAuth getFirebaseAuthInstance() => FirebaseAuth.instance;
 
-  final userDoc = await ref.get();
-  if (!userDoc.exists) return null;
+/* INFO: 取得使用者手機號碼 */
+String getPhone() => FirebaseAuth.instance.currentUser!.phoneNumber!;
 
-  Map<String, dynamic> userdataMap = userDoc.data()!;
+/* INFO: 取得 FCM token */
+Future<String?> getFcmToken() async => await FirebaseMessaging.instance.getToken();
 
-  await ref.collection('private').doc('realName').get().then((doc) {
-    userdataMap['realName'] = doc.data()!['value'];
-  });
+/* INFO: 從 Cloud Storage 下載使用者頭貼並儲存 */
+Future<File> downloadUserphoto() async {
+  File jpg = File('${(await getAppDir()).path}/userphoto.jpg');
+  await jpg.create();
 
-  await ref.collection('friendRequests').get().then((collection) {
-    userdataMap['friendRequests'] = collection.docs.map((doc) => doc.data()).toList();
-  });
+  final photoRef = FirebaseStorage.instance.ref().child('accountPhoto/${getPhone()}.jpg');
+  await photoRef.writeToFile(jpg);
 
-  await ref.collection('myRequests').get().then((collection) {
-    userdataMap['myRequests'] = collection.docs.map((doc) => doc.data()).toList();
-  });
-
-  await ref.collection('friends').get().then((collection) {
-    userdataMap['friends'] = collection.docs.map((doc) => doc.data()).toList();
-  });
-
-  return userdataMap;
-}
-
-/* INFO: 註冊用戶 */
-Future<void> registerAccount(BuildContext context, {required ProgressDialogModel progress, required Map<String, dynamic> userdataPublicMap, required Map<String, dynamic> userdataPrivateMap, File? userphoto}) async {
-  final db = FirebaseFirestore.instance;
-  final phone = FirebaseAuth.instance.currentUser!.phoneNumber;
-  await db.runTransaction((transaction) async {
-    /* Step 1: 取得目前用戶總數 */
-    final memberCountDoc = db.collection('variables').doc('memberCount');
-    final snapshot = await transaction.get(memberCountDoc);
-    final int newMemberCount = snapshot.get('value') + 1;
-
-    /* Step 2: 準備 userdata */
-    progress.update(0.25, '2/4: 初始用戶資料');
-    userdataPublicMap['id'] = newMemberCount; // 賦予新用戶之 id = 目前用戶總數 + 1
-
-    /* Step 3: 上傳 userdata 和帳戶圖片至 Firebase */
-    progress.update(0.5, '3/4: 上傳資料至雲端');
-    if (userphoto != null) {
-      await uploadUserphoto(userphoto);
-    }
-    final publicRef = db.collection('users').doc(phone);
-    transaction.set(publicRef, userdataPublicMap);
-    final realNameRef = db.collection('users').doc(phone).collection('private').doc('realName');
-    transaction.set(realNameRef, {'value': userdataPrivateMap['realName']});
-    final fcmTokenRef = db.collection('users').doc(phone).collection('private').doc('fcmToken');
-    transaction.set(fcmTokenRef, {'value': userdataPrivateMap['fcmToken']});
-
-    /* Step 4: 儲存 userdata 和帳戶圖片至本地 */
-    progress.update(0.75, '4/4: 寫入資料至本地');
-    Provider.of<Userdata>(context, listen: false).updateUserdataPublic = userdataPublicMap;
-    Provider.of<Userdata>(context, listen: false).updateUserdataPrivate = userdataPrivateMap;
-    Provider.of<Userdata>(context, listen: false).friendRequests = [];
-    Provider.of<Userdata>(context, listen: false).myRequests = [];
-    Provider.of<Userdata>(context, listen: false).friends = [];
-    await saveUserdataMap(Provider.of<Userdata>(context, listen: false).map);
-    if (userphoto != null) {
-      Provider.of<Userdata>(context, listen: false).updateUserphoto = userphoto;
-      await saveUserphoto(userphoto);
-    }
-
-    transaction.update(memberCountDoc, {'value': newMemberCount});
-  }).then((value) {
-    progress.update(1, '大功告成！');
-  }).catchError((e) {
-    deleteFile('userdata.json');
-    deleteFile('userphoto.jpg');
-    progress.hasError(e.toString());
-  });
-}
-
-/* INFO: 上傳使用者公開資料至 Cloud Firestore */
-void uploadUserdataPublic(Map<String, dynamic> map) {
-  final db = FirebaseFirestore.instance;
-  final batch = db.batch();
-  final phone = FirebaseAuth.instance.currentUser!.phoneNumber;
-  final ref = db.collection('users').doc(phone);
-  batch.update(ref, map);
-  batch.commit();
-}
-
-/* INFO: 上傳使用者私人資料至 Cloud Firestore */
-void uploadUserdataPrivate(Map<String, dynamic> map) {
-  final db = FirebaseFirestore.instance;
-  final batch = db.batch();
-  final phone = FirebaseAuth.instance.currentUser!.phoneNumber;
-
-  if (map['realName'] != null) {
-    final ref = db.collection('users').doc(phone).collection('private').doc('realName');
-    batch.set(ref, {'value': map['realName']});
-  }
-
-  if (map['fcmToken'] != null) {
-    final ref = db.collection('users').doc(phone).collection('private').doc('fcmToken');
-    batch.set(ref, {'value': map['fcmToken']});
-  }
-
-  batch.commit();
+  return jpg;
 }
 
 /* INFO: 上傳使用者頭貼至 Cloud Storage */
 Future<void> uploadUserphoto(File photo) async {
-  final phone = FirebaseAuth.instance.currentUser!.phoneNumber;
-  final photoRef = FirebaseStorage.instance.ref().child('accountPhoto/$phone.jpg');
+  final photoRef = FirebaseStorage.instance.ref().child('accountPhoto/${getPhone()}.jpg');
   final task = photoRef.putFile(
     photo,
     SettableMetadata(contentType: "image/jpeg"),
@@ -165,27 +64,4 @@ Future<void> uploadUserphoto(File photo) async {
       throw TimeoutException('圖片上傳逾時，若您的網路不穩定，請先避免上傳圖片');
     },
   );
-}
-
-/* INFO: 從 Cloud Storage 下載使用者頭貼並儲存 */
-Future<File?> downloadUserphoto() async {
-  final appDir = await getApplicationDocumentsDirectory();
-  File jpg = File('${appDir.path}/userphoto.jpg');
-  await jpg.create();
-
-  final phone = FirebaseAuth.instance.currentUser!.phoneNumber!;
-  final photoRef = FirebaseStorage.instance.ref().child('accountPhoto/$phone.jpg');
-  try {
-    await photoRef.writeToFile(jpg);
-  } on FirebaseException catch (e) {
-    if (jpg.existsSync()) await jpg.delete();
-
-    if (e.code == 'object-not-found') {
-      return null;
-    } else {
-      rethrow;
-    }
-  }
-
-  return jpg;
 }

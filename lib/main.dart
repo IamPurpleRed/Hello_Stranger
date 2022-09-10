@@ -1,10 +1,8 @@
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import '/components/main_frame.dart';
@@ -15,6 +13,7 @@ import '/screens/enroll_page.dart';
 import '/screens/login_page.dart';
 import '/screens/touring_page.dart';
 import '/utils/firebase_communication.dart';
+import '/utils/local_storage_communication.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,39 +23,42 @@ Future<void> main() async {
   ]); // 鎖定螢幕方向只能為垂直(網頁版不會鎖定)
   await firebaseInit();
 
-  /* INFO: 確認本地端資料 */
+  /* INFO: 確認登入狀態 */
   Map<String, dynamic>? userdataMap;
-  final appDir = await getApplicationDocumentsDirectory();
-  await Directory('${appDir.path}/accountPhoto').create();
-  final userdataFile = File('${appDir.path}/userdata.json');
-  File? userphotoFile = File('${appDir.path}/userphoto.jpg');
-  if (userdataFile.existsSync() && FirebaseAuth.instance.currentUser != null) {
-    // NOTE: 本地有 userdata.json，且 Firebase 有 currentUser，登入才成立
-    final userdataStr = await userdataFile.readAsString();
-    userdataMap = jsonDecode(userdataStr);
-    userdataMap!['enrollTime'] = DateTime.parse(userdataMap['enrollTime']); // String -> Datetime
-  } else if (userdataFile.existsSync()) {
-    // NOTE: 本地有 userdata.json，但 Firebase 沒有 currentUser
-    await userdataFile.delete();
-    if (userphotoFile.existsSync()) {
-      await userphotoFile.delete();
+  File? userphotoFile = File('${(await getAppDir()).path}/userphoto.jpg');
+  if (getFirebaseAuthInstance().currentUser != null) {
+    try {
+      final loginRes = await FirebaseFunctions.instanceFor(region: 'asia-east1').httpsCallable('login').call({
+        'phone': getPhone(),
+        'fcmToken': await getFcmToken(),
+      });
+      if (loginRes.data['code'] == 1) {
+        throw Exception('雲端函式發生錯誤');
+      } else if (loginRes.data['code'] == 2) {
+        await getFirebaseAuthInstance().signOut();
+      } else {
+        userdataMap = loginRes.data['userdata'];
+      }
+    } catch (e) {
+      // TODO: show AlertDialog & exit App
+    }
+    if (!userphotoFile.existsSync()) {
+      userphotoFile = null;
     }
   } else {
-    // NOTE: Firebase 有 currentUser，但本地沒有 userdata.json
-    await FirebaseAuth.instance.signOut();
     if (userphotoFile.existsSync()) {
       await userphotoFile.delete();
     }
   }
-
-  if (!userphotoFile.existsSync()) {
-    userphotoFile = null;
-  }
-  /* --- 確認本地端資料 END --- */
 
   runApp(
     ChangeNotifierProvider<Userdata>(
-      create: (context) => Userdata(map: userdataMap, photo: userphotoFile),
+      create: (context) {
+        Userdata instance = Userdata();
+        if (userdataMap != null) instance.importFromFirebase = userdataMap;
+        if (userphotoFile != null) instance.updateUserphoto = userphotoFile;
+        return instance;
+      },
       child: const HelloStranger(),
     ),
   );
@@ -109,7 +111,7 @@ class HelloStranger extends StatelessWidget {
           ),
         ),
       ),
-      initialRoute: (FirebaseAuth.instance.currentUser != null) ? '/main' : '/login',
+      initialRoute: (getFirebaseAuthInstance().currentUser != null) ? '/main' : '/login',
       routes: {
         '/login': (context) => LoginPage(),
         '/enroll': (context) => EnrollPage(),

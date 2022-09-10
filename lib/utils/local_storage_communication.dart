@@ -10,6 +10,8 @@ import 'package:path_provider/path_provider.dart';
     - save -> 僅儲存
 */
 
+Future<Directory> getAppDir() async => await getApplicationDocumentsDirectory();
+
 /* INFO: 儲存完整使用者資料 */
 Future<File> saveUserdataMap(Map<String, dynamic> userdataMap) async {
   if (userdataMap['enrollTime'] is Timestamp) {
@@ -17,8 +19,7 @@ Future<File> saveUserdataMap(Map<String, dynamic> userdataMap) async {
   }
 
   userdataMap['enrollTime'] = userdataMap['enrollTime'].toString();
-  final appDir = await getApplicationDocumentsDirectory();
-  File json = File('${appDir.path}/userdata.json');
+  File json = File('${(await getAppDir()).path}/userdata.json');
   await json.create();
   await json.writeAsString(jsonEncode(userdataMap));
 
@@ -27,32 +28,17 @@ Future<File> saveUserdataMap(Map<String, dynamic> userdataMap) async {
 
 /* INFO: 儲存使用者頭貼 */
 Future<File> saveUserphoto(File photo) async {
-  final appDir = await getApplicationDocumentsDirectory();
-  File jpg = File('${appDir.path}/userphoto.jpg');
+  File jpg = File('${(await getAppDir()).path}/userphoto.jpg');
   await jpg.create();
-  await photo.copy('${appDir.path}/userphoto.jpg');
+  await photo.copy('${(await getAppDir()).path}/userphoto.jpg');
 
   return jpg;
 }
 
 /* INFO: 刪除儲存在本地的檔案 */
 Future<void> deleteFile(String path) async {
-  final appDir = await getApplicationDocumentsDirectory();
-  File file = File('${appDir.path}/$path');
+  File file = File('${(await getAppDir()).path}/$path');
   if (file.existsSync()) {
     await file.delete();
   }
-}
-
-Future<void> checkAccountPhotoModifiedDate() async {
-  final appDir = await getApplicationDocumentsDirectory();
-  Directory dir = Directory('${appDir.path}/accountPhoto');
-  if (!dir.existsSync()) {
-    await dir.create();
-  }
-  await dir.list().toList().then((list) async {
-    for (var file in list) {
-      file.statSync().modified;
-    }
-  });
 }

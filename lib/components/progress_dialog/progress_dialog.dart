@@ -51,11 +51,13 @@ class ProgressDialog extends StatelessWidget {
                 ],
               ),
             ),
-            actionsPadding: const EdgeInsets.all(0),
             actions: [
               if (model.value == 1 || model.error)
                 TextButton(
-                  child: const Text('確認'),
+                  child: const Text(
+                    '確認',
+                    style: TextStyle(fontSize: Constants.defaultTextSize),
+                  ),
                   onPressed: () {
                     Navigator.pop(context);
                     if (model.value == 1) {

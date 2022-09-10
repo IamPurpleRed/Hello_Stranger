@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Userdata extends ChangeNotifier {
@@ -9,62 +8,15 @@ class Userdata extends ChangeNotifier {
   DateTime? enrollTime;
   String? displayName;
   String? realName;
-  String? fcmToken;
-  List? friendRequests;
-  List? myRequests;
-  List? friends;
-
+  bool? hasPhoto;
   File? userphoto;
 
-  Userdata({Map<String, dynamic>? map, File? photo}) {
-    if (map != null) {
-      id = map['id'];
-      enrollTime = map['enrollTime'];
-      displayName = map['displayName'];
-      realName = map['realName'];
-      fcmToken = map['fcmToken'];
-      friendRequests = map['friendRequests'];
-      myRequests = map['myRequests'];
-      friends = map['friends'];
-    }
-    userphoto = photo;
-    notifyListeners();
-  }
-
-  Map<String, dynamic> get map {
-    return {
-      'id': id,
-      'enrollTime': enrollTime,
-      'displayName': displayName,
-      'realName': realName,
-      'friendRequests': friendRequests,
-      'myRequests': myRequests,
-      'friends': friends,
-    };
-  }
-
-  String get phone => FirebaseAuth.instance.currentUser!.phoneNumber!;
-
-  set importFromCloudFirestore(Map<String, dynamic> map) {
+  set importFromFirebase(Map map) {
     id = map['id'];
-    enrollTime = (map['enrollTime'] as Timestamp).toDate();
+    enrollTime = Timestamp(map['enrollTime']['_seconds'], map['enrollTime']['_nanoseconds']).toDate();
     displayName = map['displayName'];
     realName = map['realName'];
-    friendRequests = map['friendRequests'];
-    myRequests = map['myRequests'];
-    friends = map['friends'];
-    notifyListeners();
-  }
-
-  set updateUserdataPublic(Map<String, dynamic> map) {
-    id = map['id'];
-    enrollTime = map['enrollTime'];
-    displayName = map['displayName'];
-    notifyListeners();
-  }
-
-  set updateUserdataPrivate(Map<String, dynamic> map) {
-    realName = map['realName'];
+    hasPhoto = map['hasPhoto'];
     notifyListeners();
   }
 
@@ -78,10 +30,9 @@ class Userdata extends ChangeNotifier {
     enrollTime = null;
     displayName = null;
     realName = null;
-    friendRequests = null;
-    myRequests = null;
-    friends = null;
+    hasPhoto = null;
     userphoto = null;
+    // 使用者存在 Cloud Firestore 的 fcmToken 要移除
     notifyListeners();
 
     return this;
