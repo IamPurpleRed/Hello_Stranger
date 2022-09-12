@@ -1,7 +1,7 @@
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
 /* NOTE: 
@@ -11,20 +11,6 @@ import 'package:path_provider/path_provider.dart';
 */
 
 Future<Directory> getAppDir() async => await getApplicationDocumentsDirectory();
-
-/* INFO: 儲存完整使用者資料 */
-Future<File> saveUserdataMap(Map<String, dynamic> userdataMap) async {
-  if (userdataMap['enrollTime'] is Timestamp) {
-    userdataMap['enrollTime'] = (userdataMap['enrollTime'] as Timestamp).toDate();
-  }
-
-  userdataMap['enrollTime'] = userdataMap['enrollTime'].toString();
-  File json = File('${(await getAppDir()).path}/userdata.json');
-  await json.create();
-  await json.writeAsString(jsonEncode(userdataMap));
-
-  return json;
-}
 
 /* INFO: 儲存使用者頭貼 */
 Future<File> saveUserphoto(File photo) async {
@@ -41,4 +27,13 @@ Future<void> deleteFile(String path) async {
   if (file.existsSync()) {
     await file.delete();
   }
+}
+
+Future<Image> saveDeviceImage(DateTime dt, String photoRef) async {
+  final res = await http.get(Uri.parse(photoRef));
+  File jpg = File('${(await getAppDir()).path}/${dt.millisecondsSinceEpoch}.jpg');
+  await jpg.create();
+  await jpg.writeAsBytes(res.bodyBytes);
+
+  return Image.file(jpg);
 }
