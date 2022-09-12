@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-import 'package:hello_stranger/utils/local_storage_communication.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:wakelock/wakelock.dart';
 
 import '/config/constants.dart';
+import '/utils/local_storage_communication.dart';
 
 class TouringPage extends StatefulWidget {
   TouringPage({Key? key, this.domain}) : super(key: key);
@@ -23,18 +25,21 @@ class _TouringPageState extends State<TouringPage> {
   String? deviceId;
   DateTime? dt;
   String? type;
-  String? title;
-  String? content;
-  String? photoRef;
+  String? title; // type A
+  String? content; // type A
+  String? href; // type A
+  String? photoRef; // type A
 
   @override
   void initState() {
     super.initState();
+    Wakelock.enable();
     startScanning();
   }
 
   @override
   void dispose() {
+    Wakelock.disable();
     scanStreamSub = null;
     super.dispose();
   }
@@ -53,7 +58,7 @@ class _TouringPageState extends State<TouringPage> {
     });
   }
 
-  Future getDeviceConfig() async {
+  Future<void> getDeviceConfig() async {
     try {
       final configRes = await FirebaseFunctions.instanceFor(region: 'asia-east1').httpsCallable('getDeviceConfig').call({
         'deviceId': deviceId,
@@ -73,20 +78,29 @@ class _TouringPageState extends State<TouringPage> {
         return;
       }
 
-      if (configRes.data['config']['type'] == 'A') {
+      Map config = configRes.data['config'];
+      config['datetime'] = DateTime.now();
+      if (config['type'] == 'A') {
         setState(() {
           type = 'A';
-          dt = DateTime.now();
-          title = configRes.data['config']['title'];
-          content = configRes.data['config']['content'];
-          photoRef = (configRes.data['config']['photoRef'] == '') ? null : configRes.data['config']['photoRef'];
+          dt = config['datetime'];
+          title = config['title'];
+          content = config['content'];
+          href = (config['href'] == '') ? null : config['href'];
+          photoRef = (config['photoRef'] == '') ? null : config['photoRef'];
+        });
+        await addItemToHistoryFile({
+          'datetime': config['datetime'].toString(),
+          'title': config['title'],
+          'content': config['content'],
+          'href': config['href'],
         });
       } else {
-        startScanning();
         setState(() {
           hintText = '掃描中...';
           deviceId = null;
         });
+        startScanning();
       }
     } catch (e) {
       setState(() {
@@ -107,7 +121,59 @@ class _TouringPageState extends State<TouringPage> {
       },
       child: Scaffold(
         body: (type == null) ? noResultArea(vw) : typeA(vw, vh),
+        floatingActionButton: (href == null)
+            ? null
+            : Padding(
+                padding: EdgeInsets.only(top: vh * 0.3),
+                child: FloatingActionButton(
+                  child: const Icon(Icons.launch, color: Colors.white),
+                  onPressed: () => launchUrl(Uri.parse(href!), mode: LaunchMode.externalApplication),
+                ),
+              ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
       ),
+    );
+  }
+
+  Row buttons(double vw) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        SizedBox(
+          width: vw * 0.35,
+          child: ElevatedButton(
+            onPressed: (deviceId == null)
+                ? null
+                : () {
+                    setState(() {
+                      hintText = '掃描中...';
+                      deviceId = null;
+                      dt = null;
+                      type = null;
+                      title = null;
+                      content = null;
+                      href = null;
+                      photoRef = null;
+                    });
+                    startScanning();
+                  },
+            child: const Text(
+              '繼續掃描',
+              style: TextStyle(fontSize: Constants.defaultTextSize),
+            ),
+          ),
+        ),
+        SizedBox(
+          width: vw * 0.35,
+          child: ElevatedButton(
+            child: const Text(
+              '停止導覽',
+              style: TextStyle(fontSize: Constants.defaultTextSize),
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+      ],
     );
   }
 
@@ -129,7 +195,7 @@ class _TouringPageState extends State<TouringPage> {
     );
   }
 
-  Widget typeA(double vw, double vh) {
+  Widget typeA(vw, vh) {
     return Column(
       children: [
         SizedBox(
@@ -146,7 +212,7 @@ class _TouringPageState extends State<TouringPage> {
                 : Image.asset('assets/no_image.png'),
           ),
         ),
-        const SizedBox(height: 10.0),
+        const SizedBox(height: 20.0),
         Expanded(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: vw * 0.1),
@@ -172,47 +238,6 @@ class _TouringPageState extends State<TouringPage> {
                 const SizedBox(height: 20.0),
               ],
             ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Row buttons(double vw) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        SizedBox(
-          width: vw * 0.35,
-          child: ElevatedButton(
-            onPressed: (deviceId == null)
-                ? null
-                : () {
-                    setState(() {
-                      hintText = '掃描中...';
-                      deviceId = null;
-                      dt = null;
-                      type = null;
-                      title = null;
-                      content = null;
-                      photoRef = null;
-                    });
-                    startScanning();
-                  },
-            child: const Text(
-              '繼續掃描',
-              style: TextStyle(fontSize: Constants.defaultTextSize),
-            ),
-          ),
-        ),
-        SizedBox(
-          width: vw * 0.35,
-          child: ElevatedButton(
-            child: const Text(
-              '停止導覽',
-              style: TextStyle(fontSize: Constants.defaultTextSize),
-            ),
-            onPressed: () => Navigator.pop(context),
           ),
         ),
       ],

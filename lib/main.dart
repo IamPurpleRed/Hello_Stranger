@@ -23,9 +23,9 @@ Future<void> main() async {
   ]); // 鎖定螢幕方向只能為垂直(網頁版不會鎖定)
   await firebaseInit();
 
-  /* INFO: 確認登入狀態 */
   Map<String, dynamic>? userdataMap;
   File? userphotoFile = File('${(await getAppDir()).path}/userphoto.jpg');
+  await historyFileCheck();
   if (getFirebaseAuthInstance().currentUser != null) {
     try {
       final loginRes = await FirebaseFunctions.instanceFor(region: 'asia-east1').httpsCallable('login').call({

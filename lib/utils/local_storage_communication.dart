@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -11,6 +12,14 @@ import 'package:path_provider/path_provider.dart';
 */
 
 Future<Directory> getAppDir() async => await getApplicationDocumentsDirectory();
+
+Future historyFileCheck() async {
+  File json = File('${(await getAppDir()).path}/history.json');
+  if (!json.existsSync()) {
+    await json.create();
+    await json.writeAsString('[]');
+  }
+}
 
 /* INFO: 儲存使用者頭貼 */
 Future<File> saveUserphoto(File photo) async {
@@ -36,4 +45,11 @@ Future<Image> saveDeviceImage(DateTime dt, String photoRef) async {
   await jpg.writeAsBytes(res.bodyBytes);
 
   return Image.file(jpg);
+}
+
+Future<void> addItemToHistoryFile(Map item) async {
+  File json = File('${(await getAppDir()).path}/history.json');
+  List list = jsonDecode(await json.readAsString());
+  list.add(item);
+  await json.writeAsString(jsonEncode(list));
 }
