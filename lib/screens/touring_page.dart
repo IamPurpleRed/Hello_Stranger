@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -60,25 +61,32 @@ class _TouringPageState extends State<TouringPage> {
 
   Future<void> getDeviceConfig() async {
     try {
-      final configRes = await FirebaseFunctions.instanceFor(region: 'asia-east1').httpsCallable('getDeviceConfig').call({
-        'deviceId': deviceId,
-      });
-      if (configRes.data['code'] == 1) {
-        setState(() {
-          hintText = '雲端函式發生錯誤，請離開導覽模式';
-          deviceId = null;
+      late Map config;
+
+      if (widget.domain == null) {
+        final configRes = await FirebaseFunctions.instanceFor(region: 'asia-east1').httpsCallable('getDeviceConfig').call({
+          'deviceId': deviceId,
         });
-        return;
-      } else if (configRes.data['code'] == 2) {
-        startScanning();
-        setState(() {
-          hintText = '掃描中...';
-          deviceId = null;
-        });
-        return;
+        if (configRes.data['code'] == 1) {
+          setState(() {
+            hintText = '雲端函式發生錯誤，請離開導覽模式';
+            deviceId = null;
+          });
+          return;
+        } else if (configRes.data['code'] == 2) {
+          startScanning();
+          setState(() {
+            hintText = '掃描中...';
+            deviceId = null;
+          });
+          return;
+        }
+        config = configRes.data['config'];
+      } else {
+        final configRes = await Dio().get('${widget.domain}/devices%2F$deviceId%2Fconfig.json?alt=media');
+        config = configRes.data;
       }
 
-      Map config = configRes.data['config'];
       config['datetime'] = DateTime.now();
       if (config['type'] == 'A') {
         setState(() {

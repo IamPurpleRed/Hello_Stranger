@@ -4,11 +4,13 @@ import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:hello_stranger/components/widgets.dart';
-import 'package:hello_stranger/config/constants.dart';
-import 'package:hello_stranger/config/palette.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+
+import '/components/widgets.dart';
+import '/config/constants.dart';
+import '/config/palette.dart';
+import '/screens/touring_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -202,10 +204,12 @@ class _HomePageState extends State<HomePage> {
                   controller.scannedDataStream.listen((scanData) {
                     if (scanData.code != null) {
                       qrController!.dispose();
-                      Navigator.pop(context);
-                      setState(() {
-                        url = scanData.code;
-                      });
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TouringPage(domain: scanData.code),
+                        ),
+                      );
                     }
                   });
                 },

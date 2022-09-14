@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
 /* NOTE: 
@@ -39,10 +39,13 @@ Future<void> deleteFile(String path) async {
 }
 
 Future<Image> saveDeviceImage(DateTime dt, String photoRef) async {
-  final res = await http.get(Uri.parse(photoRef));
+  final res = await Dio().get<List<int>>(
+    photoRef,
+    options: Options(responseType: ResponseType.bytes),
+  );
   File jpg = File('${(await getAppDir()).path}/${dt.millisecondsSinceEpoch}.jpg');
   await jpg.create();
-  await jpg.writeAsBytes(res.bodyBytes);
+  await jpg.writeAsBytes(res.data!);
 
   return Image.file(jpg);
 }
