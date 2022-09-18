@@ -112,8 +112,7 @@ class _TouringPageState extends State<TouringPage> {
       }
     } catch (e) {
       setState(() {
-        hintText = '網路連線不穩定，請離開導覽模式';
-        deviceId = null;
+        hintText = '網路連線不穩定，請重新掃描';
       });
     }
   }

@@ -23,9 +23,9 @@ Future<void> main() async {
   ]); // 鎖定螢幕方向只能為垂直(網頁版不會鎖定)
   await firebaseInit();
 
-  Map<String, dynamic>? userdataMap;
-  File? userphotoFile = File('${(await getAppDir()).path}/userphoto.jpg');
   await historyFileCheck();
+  Map<String, dynamic>? userdataMap;
+  File? userphotoFile = await getUserphoto();
   if (getFirebaseAuthInstance().currentUser != null) {
     try {
       final loginRes = await FirebaseFunctions.instanceFor(region: 'asia-east1').httpsCallable('login').call({
@@ -41,13 +41,6 @@ Future<void> main() async {
       }
     } catch (e) {
       // TODO: show AlertDialog & exit App
-    }
-    if (!userphotoFile.existsSync()) {
-      userphotoFile = null;
-    }
-  } else {
-    if (userphotoFile.existsSync()) {
-      await userphotoFile.delete();
     }
   }
 

@@ -11,7 +11,14 @@ import 'package:path_provider/path_provider.dart';
     - save -> 僅儲存
 */
 
+/* INFO: 取得本地 App 資料夾路徑 */
 Future<Directory> getAppDir() async => await getApplicationDocumentsDirectory();
+
+/* INFO: 從本地取得使用者頭貼，若無則回傳 null */
+Future<File?> getUserphoto() async {
+  File jpg = File('${(await getAppDir()).path}/userphoto.jpg');
+  return (jpg.existsSync()) ? jpg : null;
+}
 
 Future historyFileCheck() async {
   File json = File('${(await getAppDir()).path}/history.json');

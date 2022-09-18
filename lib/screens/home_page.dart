@@ -86,10 +86,10 @@ class _HomePageState extends State<HomePage> {
                         title: '無法進入導覽模式',
                         content: '請至設定允許 Hello Stranger 相關權限，才能開始使用喔',
                       );
-
                       return;
+                    } else {
+                      showScanner(vw);
                     }
-                    showScanner(vw);
                   },
                   child: SizedBox(
                     width: vw * 0.8,
@@ -120,11 +120,10 @@ class _HomePageState extends State<HomePage> {
                           title: '無法進入導覽模式',
                           content: '請至設定允許 Hello Stranger 相關權限，才能開始使用喔',
                         );
-
                         return;
+                      } else {
+                        Navigator.pushNamed(context, '/main/touring');
                       }
-
-                      Navigator.pushNamed(context, '/main/touring');
                     },
                     child: const Text(
                       '一般導覽',
@@ -150,28 +149,23 @@ class _HomePageState extends State<HomePage> {
       ];
 
       if (!status[0]) {
-        if (await Permission.bluetoothScan.isPermanentlyDenied) {
-          return false;
-        }
         status[0] = await Permission.bluetoothScan.request().isGranted;
       }
 
       if (!status[1]) {
-        if (await Permission.bluetoothConnect.isPermanentlyDenied) {
-          return false;
-        }
         status[1] = await Permission.bluetoothConnect.request().isGranted;
       }
 
       if (!status[2]) {
-        if (await Permission.location.isPermanentlyDenied) {
-          return false;
-        }
         status[2] = await Permission.location.request().isGranted;
       }
 
       return (status[0] && status[1] && status[2]) ? true : false;
     } else {
+      if (!await Permission.bluetooth.isGranted) {
+        (await Permission.bluetooth.request().isGranted) ? true : false;
+      }
+
       return true;
     }
   }
