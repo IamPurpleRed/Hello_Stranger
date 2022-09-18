@@ -49,7 +49,7 @@ class Widgets {
     );
   }
 
-  /* INFO: 提示方塊（使用者僅可按確認） */
+  /* INFO: 提示方塊 (使用者僅可按確認) */
   static void alertDialog(
     BuildContext context, {
     required String title,

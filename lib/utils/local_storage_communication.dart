@@ -20,6 +20,7 @@ Future<File?> getUserphoto() async {
   return (jpg.existsSync()) ? jpg : null;
 }
 
+/* INFO: 檢查本地是否有 history.json，若無則建立 */
 Future historyFileCheck() async {
   File json = File('${(await getAppDir()).path}/history.json');
   if (!json.existsSync()) {
@@ -37,15 +38,16 @@ Future<File> saveUserphoto(File photo) async {
   return jpg;
 }
 
-/* INFO: 刪除儲存在本地的檔案 */
-Future<void> deleteFile(String path) async {
-  File file = File('${(await getAppDir()).path}/$path');
-  if (file.existsSync()) {
-    await file.delete();
-  }
+/* INFO: 在一般導覽模式下，掃描到裝置之後的紀錄動作 */
+Future<void> addItemToHistoryFile(Map item) async {
+  File json = File('${(await getAppDir()).path}/history.json');
+  List list = jsonDecode(await json.readAsString());
+  list.add(item);
+  await json.writeAsString(jsonEncode(list));
 }
 
-Future<Image> saveDeviceImage(DateTime dt, String photoRef) async {
+/* INFO: 在一般導覽模式下，根據 photoRef 下載掃描到裝置之圖片並儲存 */
+Future<Image> downloadDeviceImage(DateTime dt, String photoRef) async {
   final res = await Dio().get<List<int>>(
     photoRef,
     options: Options(responseType: ResponseType.bytes),
@@ -55,11 +57,4 @@ Future<Image> saveDeviceImage(DateTime dt, String photoRef) async {
   await jpg.writeAsBytes(res.data!);
 
   return Image.file(jpg);
-}
-
-Future<void> addItemToHistoryFile(Map item) async {
-  File json = File('${(await getAppDir()).path}/history.json');
-  List list = jsonDecode(await json.readAsString());
-  list.add(item);
-  await json.writeAsString(jsonEncode(list));
 }

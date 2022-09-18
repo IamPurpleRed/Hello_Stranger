@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:async';
 import 'dart:io';
 
@@ -7,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
 
 import '/firebase_options.dart';
 import '/utils/local_storage_communication.dart';
@@ -65,9 +62,4 @@ Future<void> uploadUserphoto(File photo) async {
       throw TimeoutException('圖片上傳逾時，若您的網路不穩定，請先避免上傳圖片');
     },
   );
-}
-
-Future<Widget> downloadDeviceImage(String deviceId) async {
-  final data = await FirebaseStorage.instance.ref('devices/$deviceId/image.jpg').getData();
-  return Image.memory(data!);
 }

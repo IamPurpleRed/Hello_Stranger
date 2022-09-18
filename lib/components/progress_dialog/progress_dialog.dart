@@ -14,7 +14,7 @@ class ProgressDialog extends StatelessWidget {
     final double vw = MediaQuery.of(context).size.width;
 
     return Consumer<ProgressDialogModel>(
-      builder: ((context, model, child) {
+      builder: (context, model, child) {
         return WillPopScope(
           onWillPop: () async => false,
           child: AlertDialog(
@@ -68,7 +68,7 @@ class ProgressDialog extends StatelessWidget {
             ],
           ),
         );
-      }),
+      },
     );
   }
 

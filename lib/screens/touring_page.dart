@@ -4,9 +4,12 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wakelock/wakelock.dart';
 
+import '/components/player/player.dart';
+import '/components/player/player_model.dart';
 import '/config/constants.dart';
 import '/utils/local_storage_communication.dart';
 
@@ -15,6 +18,7 @@ class TouringPage extends StatefulWidget {
 
   final String? domain;
   final ble = FlutterReactiveBle();
+  final playerModel = PlayerModel();
 
   @override
   State<TouringPage> createState() => _TouringPageState();
@@ -30,6 +34,7 @@ class _TouringPageState extends State<TouringPage> {
   String? content; // type A
   String? href; // type A
   String? photoRef; // type A
+  String? audioRef; // type A
 
   @override
   void initState() {
@@ -42,6 +47,7 @@ class _TouringPageState extends State<TouringPage> {
   void dispose() {
     Wakelock.disable();
     scanStreamSub = null;
+    widget.playerModel.dispose();
     super.dispose();
   }
 
@@ -96,6 +102,7 @@ class _TouringPageState extends State<TouringPage> {
           content = config['content'];
           href = (config['href'] == '') ? null : config['href'];
           photoRef = (config['photoRef'] == '') ? null : config['photoRef'];
+          audioRef = (config['audioRef'] == '') ? null : config['audioRef'];
         });
         await addItemToHistoryFile({
           'datetime': config['datetime'].toString(),
@@ -213,7 +220,7 @@ class _TouringPageState extends State<TouringPage> {
             child: (photoRef != null)
                 ? FutureBuilder(
                     initialData: Image.asset('assets/loading_image.gif'),
-                    future: saveDeviceImage(dt!, photoRef!),
+                    future: downloadDeviceImage(dt!, photoRef!),
                     builder: (context, snapshot) => snapshot.data as Widget,
                   )
                 : Image.asset('assets/no_image.png'),
@@ -222,7 +229,7 @@ class _TouringPageState extends State<TouringPage> {
         const SizedBox(height: 20.0),
         Expanded(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: vw * 0.1),
+            padding: EdgeInsets.symmetric(horizontal: vw * 0.08),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -236,13 +243,25 @@ class _TouringPageState extends State<TouringPage> {
                     physics: const BouncingScrollPhysics(),
                     child: Text(
                       content!,
-                      style: const TextStyle(fontSize: Constants.contentSize, height: 1.5),
+                      style: const TextStyle(
+                        fontSize: Constants.contentSize,
+                        height: 1.5,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 10.0),
+                if (audioRef != null) const SizedBox(height: 15.0),
+                if (audioRef != null)
+                  ChangeNotifierProvider(
+                    create: (context) {
+                      widget.playerModel.url = audioRef!;
+                      return widget.playerModel;
+                    },
+                    child: const Player(),
+                  ),
+                const SizedBox(height: 15.0),
                 buttons(vw),
-                const SizedBox(height: 20.0),
+                const SizedBox(height: 15.0),
               ],
             ),
           ),
