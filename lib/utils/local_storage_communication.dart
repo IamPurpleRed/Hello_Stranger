@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -42,7 +43,15 @@ Future<File> saveUserphoto(File photo) async {
 Future<void> addItemToHistoryFile(Map item) async {
   File json = File('${(await getAppDir()).path}/history.json');
   List list = jsonDecode(await json.readAsString());
-  list.add(item);
+  if (list.isNotEmpty) {
+    if (list[list.length - 1]['deviceId'] != item['deviceId']) {
+      list[list.length - 1]['datetime'] = item['datetime'];
+    } else {
+      list.add(item);
+    }
+  } else {
+    list.add(item);
+  }
   await json.writeAsString(jsonEncode(list));
 }
 
@@ -52,9 +61,6 @@ Future<Image> downloadDeviceImage(DateTime dt, String photoRef) async {
     photoRef,
     options: Options(responseType: ResponseType.bytes),
   );
-  File jpg = File('${(await getAppDir()).path}/${dt.millisecondsSinceEpoch}.jpg');
-  await jpg.create();
-  await jpg.writeAsBytes(res.data!);
 
-  return Image.file(jpg);
+  return Image.memory(Uint8List.fromList(res.data!));
 }

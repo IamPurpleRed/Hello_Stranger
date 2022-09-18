@@ -106,9 +106,12 @@ class _TouringPageState extends State<TouringPage> {
         });
         await addItemToHistoryFile({
           'datetime': config['datetime'].toString(),
+          'deviceId': deviceId,
           'title': config['title'],
           'content': config['content'],
           'href': config['href'],
+          'photoRef': config['photoRef'],
+          'audioRef': config['audioRef'],
         });
       } else {
         setState(() {
