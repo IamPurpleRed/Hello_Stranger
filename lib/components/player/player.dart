@@ -46,9 +46,7 @@ class Player extends StatelessWidget {
             Expanded(
               child: ProgressBar(
                 total: model.total,
-                buffered: model.buffered,
                 progress: model.current,
-                bufferedBarColor: Palette.secondaryGradientColor.withOpacity(0.4),
                 onSeek: (value) => model.player!.seek(value),
               ),
             ),

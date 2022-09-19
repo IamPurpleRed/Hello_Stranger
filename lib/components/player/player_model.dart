@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:hello_stranger/utils/local_storage_communication.dart';
 import 'package:just_audio/just_audio.dart';
 
 enum PlayerState { loading, playing, paused }
@@ -8,20 +10,15 @@ enum PlayerState { loading, playing, paused }
 class PlayerModel extends ChangeNotifier {
   AudioPlayer? player;
   Duration total = Duration.zero;
-  Duration buffered = Duration.zero;
-  StreamSubscription<Duration>? bufferedStreamSub;
   Duration current = Duration.zero;
   StreamSubscription<Duration>? currentStreamSub;
   PlayerState state = PlayerState.loading;
   StreamSubscription? stateStreamSub;
 
-  set url(String url) {
-    _init(url);
-  }
-
-  Future<void> _init(String url) async {
+  Future<void> init(String uniqueId, String audioRef) async {
     player = AudioPlayer();
-    await player!.setUrl(url);
+    File audio = await downloadDeviceAudio(uniqueId, audioRef);
+    await player!.setFilePath(audio.path);
     total = player!.duration!;
 
     stateStreamSub = player!.playerStateStream.listen((playerState) {
@@ -40,11 +37,6 @@ class PlayerModel extends ChangeNotifier {
       notifyListeners();
     });
 
-    bufferedStreamSub = player!.bufferedPositionStream.listen((position) {
-      buffered = position;
-      notifyListeners();
-    });
-
     currentStreamSub = player!.positionStream.listen((position) {
       current = position;
       notifyListeners();
@@ -57,10 +49,10 @@ class PlayerModel extends ChangeNotifier {
   @override
   // ignore: must_call_super
   void dispose() {
-    player!.dispose();
+    if (player != null) {
+      player!.dispose();
+    }
     total = Duration.zero;
-    buffered = Duration.zero;
-    bufferedStreamSub = null;
     current = Duration.zero;
     currentStreamSub = null;
     state = PlayerState.loading;

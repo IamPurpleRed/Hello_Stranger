@@ -4,11 +4,10 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wakelock/wakelock.dart';
 
-import '/components/player/player.dart';
+import '/components/device_type.dart';
 import '/components/player/player_model.dart';
 import '/config/constants.dart';
 import '/utils/local_storage_communication.dart';
@@ -27,7 +26,7 @@ class TouringPage extends StatefulWidget {
 class _TouringPageState extends State<TouringPage> {
   String hintText = '掃描中...';
   StreamSubscription<DiscoveredDevice>? scanStreamSub;
-  String? deviceId;
+  String? uniqueId;
   DateTime? dt;
   String? type;
   String? title; // type A
@@ -51,14 +50,14 @@ class _TouringPageState extends State<TouringPage> {
     super.dispose();
   }
 
-  void startScanning() {
+  void startScanning() async {
     scanStreamSub = widget.ble.scanForDevices(withServices: [], scanMode: ScanMode.lowLatency).listen((device) async {
       if (device.name.contains('HS-') && device.name.length == 15 && device.rssi >= -50) {
         await scanStreamSub!.cancel();
         setState(() {
           hintText = '偵測到裝置，讀取資料中...';
           scanStreamSub = null;
-          deviceId = device.name.substring(3);
+          uniqueId = device.name.substring(3);
         });
         await getDeviceConfig();
       }
@@ -67,56 +66,61 @@ class _TouringPageState extends State<TouringPage> {
 
   Future<void> getDeviceConfig() async {
     try {
+      /* INFO: 取得資料 */
       late Map config;
-
       if (widget.domain == null) {
         final configRes = await FirebaseFunctions.instanceFor(region: 'asia-east1').httpsCallable('getDeviceConfig').call({
-          'deviceId': deviceId,
+          'deviceId': uniqueId,
         });
         if (configRes.data['code'] == 1) {
           setState(() {
             hintText = '雲端函式發生錯誤，請離開導覽模式';
-            deviceId = null;
+            uniqueId = null;
           });
           return;
         } else if (configRes.data['code'] == 2) {
           startScanning();
           setState(() {
             hintText = '掃描中...';
-            deviceId = null;
+            uniqueId = null;
           });
           return;
         }
         config = configRes.data['config'];
       } else {
-        final configRes = await Dio().get('${widget.domain}/devices%2F$deviceId%2Fconfig.json?alt=media');
+        final configRes = await Dio().get('${widget.domain}/devices%2F$uniqueId%2Fconfig.json?alt=media');
         config = configRes.data;
       }
 
-      config['datetime'] = DateTime.now();
+      /* INFO: 檢查歷史足跡是否有相同 id 之資料，若有則需刪除 */
+      List historyList = await getHistoryList();
+      for (var item in historyList) {
+        if (item['uniqueId'] == uniqueId) {
+          historyList.remove(item);
+          await deleteDirectory('history/${item['deviceId']}');
+          break;
+        }
+      }
+
+      /* INFO: 加入新的內容到 historyList */
+      config['datetime'] = DateTime.now().toString();
+      historyList.add(config);
+      updateHistoryFile(historyList);
+
       if (config['type'] == 'A') {
         setState(() {
-          type = 'A';
-          dt = config['datetime'];
+          dt = DateTime.parse(config['datetime']);
           title = config['title'];
           content = config['content'];
           href = (config['href'] == '') ? null : config['href'];
           photoRef = (config['photoRef'] == '') ? null : config['photoRef'];
           audioRef = (config['audioRef'] == '') ? null : config['audioRef'];
-        });
-        await addItemToHistoryFile({
-          'datetime': config['datetime'].toString(),
-          'deviceId': deviceId,
-          'title': config['title'],
-          'content': config['content'],
-          'href': config['href'],
-          'photoRef': config['photoRef'],
-          'audioRef': config['audioRef'],
+          type = 'A';
         });
       } else {
         setState(() {
           hintText = '掃描中...';
-          deviceId = null;
+          uniqueId = null;
         });
         startScanning();
       }
@@ -137,7 +141,7 @@ class _TouringPageState extends State<TouringPage> {
         return false;
       },
       child: Scaffold(
-        body: (type == null) ? noResultArea(vw) : typeA(vw, vh),
+        body: (type == null) ? noResultArea(vw) : resultArea(vw, vh),
         floatingActionButton: (href == null)
             ? null
             : Padding(
@@ -152,124 +156,84 @@ class _TouringPageState extends State<TouringPage> {
     );
   }
 
-  Row buttons(double vw) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        SizedBox(
-          width: vw * 0.35,
-          child: ElevatedButton(
-            onPressed: (deviceId == null)
-                ? null
-                : () {
-                    setState(() {
-                      hintText = '掃描中...';
-                      deviceId = null;
-                      dt = null;
-                      type = null;
-                      title = null;
-                      content = null;
-                      href = null;
-                      photoRef = null;
-                    });
-                    startScanning();
-                  },
-            child: const Text(
-              '繼續掃描',
-              style: TextStyle(fontSize: Constants.defaultTextSize),
-            ),
-          ),
-        ),
-        SizedBox(
-          width: vw * 0.35,
-          child: ElevatedButton(
-            child: const Text(
-              '停止導覽',
-              style: TextStyle(fontSize: Constants.defaultTextSize),
-            ),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget noResultArea(double vw) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: vw * 0.1),
-      child: Column(
-        children: [
-          const Expanded(child: SizedBox()),
-          Text(
-            hintText,
-            style: const TextStyle(fontSize: Constants.defaultTextSize),
-          ),
-          const Expanded(child: SizedBox()),
-          buttons(vw),
-          const SizedBox(height: 20.0),
-        ],
-      ),
-    );
-  }
-
-  Widget typeA(vw, vh) {
     return Column(
       children: [
-        SizedBox(
-          width: vw,
-          height: vh * 0.4,
-          child: FittedBox(
-            fit: BoxFit.fill,
-            child: (photoRef != null)
-                ? FutureBuilder(
-                    initialData: Image.asset('assets/loading_image.gif'),
-                    future: downloadDeviceImage(dt!, photoRef!),
-                    builder: (context, snapshot) => snapshot.data as Widget,
-                  )
-                : Image.asset('assets/no_image.png'),
-          ),
+        const Expanded(child: SizedBox()),
+        Text(
+          hintText,
+          style: const TextStyle(fontSize: Constants.defaultTextSize),
         ),
-        const SizedBox(height: 20.0),
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: vw * 0.08),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title!,
-                  style: const TextStyle(fontSize: Constants.headline1Size, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 20.0),
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: Text(
-                      content!,
-                      style: const TextStyle(
-                        fontSize: Constants.contentSize,
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                ),
-                if (audioRef != null) const SizedBox(height: 15.0),
-                if (audioRef != null)
-                  ChangeNotifierProvider(
-                    create: (context) {
-                      widget.playerModel.url = audioRef!;
-                      return widget.playerModel;
+        const Expanded(child: SizedBox()),
+        buttons(vw),
+        const SizedBox(height: 15.0),
+      ],
+    );
+  }
+
+  Widget resultArea(vw, vh) {
+    List<Widget> colChildren = [];
+    if (type == 'A') {
+      colChildren = typeA(
+        vw: vw,
+        vh: vh,
+        playerModel: widget.playerModel,
+        uniqueId: uniqueId!,
+        title: title!,
+        content: content,
+        photoRef: photoRef,
+        audioRef: audioRef,
+      );
+    }
+    colChildren.add(const SizedBox(height: 15.0));
+    colChildren.add(buttons(vw));
+    colChildren.add(const SizedBox(height: 15.0));
+
+    return Column(children: colChildren);
+  }
+
+  Padding buttons(double vw) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: vw * 0.08),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          SizedBox(
+            width: vw * 0.38,
+            child: ElevatedButton(
+              onPressed: (uniqueId == null)
+                  ? null
+                  : () {
+                      setState(() {
+                        hintText = '掃描中...';
+                        uniqueId = null;
+                        dt = null;
+                        type = null;
+                        title = null;
+                        content = null;
+                        href = null;
+                        photoRef = null;
+                      });
+                      startScanning();
                     },
-                    child: const Player(),
-                  ),
-                const SizedBox(height: 15.0),
-                buttons(vw),
-                const SizedBox(height: 15.0),
-              ],
+              child: const Text(
+                '繼續掃描',
+                style: TextStyle(fontSize: Constants.defaultTextSize),
+              ),
             ),
           ),
-        ),
-      ],
+          SizedBox(
+            width: vw * 0.38,
+            child: ElevatedButton(
+              child: const Text(
+                '停止導覽',
+                style: TextStyle(fontSize: Constants.defaultTextSize),
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
