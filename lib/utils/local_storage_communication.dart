@@ -21,6 +21,12 @@ Future<File?> getUserphoto() async {
   return (jpg.existsSync()) ? jpg : null;
 }
 
+/* INFO: 從本地取得 history.json 解析之陣列 */
+Future<List> getHistoryList() async {
+  File json = File('${(await getAppDir()).path}/history.json');
+  return jsonDecode(await json.readAsString());
+}
+
 /* INFO: 檢查本地是否有 history.json，若無則建立 */
 Future historyFileCheck() async {
   File json = File('${(await getAppDir()).path}/history.json');
@@ -44,7 +50,7 @@ Future<void> addItemToHistoryFile(Map item) async {
   File json = File('${(await getAppDir()).path}/history.json');
   List list = jsonDecode(await json.readAsString());
   if (list.isNotEmpty) {
-    if (list[list.length - 1]['deviceId'] != item['deviceId']) {
+    if (list[list.length - 1]['deviceId'] == item['deviceId']) {
       list[list.length - 1]['datetime'] = item['datetime'];
     } else {
       list.add(item);
@@ -55,7 +61,7 @@ Future<void> addItemToHistoryFile(Map item) async {
   await json.writeAsString(jsonEncode(list));
 }
 
-/* INFO: 在一般導覽模式下，根據 photoRef 下載掃描到裝置之圖片並儲存 */
+/* INFO: 在一般導覽模式下，根據 photoRef 取得掃描到裝置之圖片 */
 Future<Image> downloadDeviceImage(DateTime dt, String photoRef) async {
   final res = await Dio().get<List<int>>(
     photoRef,
