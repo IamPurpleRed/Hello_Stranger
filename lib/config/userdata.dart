@@ -8,6 +8,7 @@ class Userdata extends ChangeNotifier {
   DateTime? enrollTime;
   String? displayName;
   String? realName;
+  bool? accessibility;
   bool? hasPhoto;
   File? userphoto;
 
@@ -16,6 +17,7 @@ class Userdata extends ChangeNotifier {
     enrollTime = Timestamp(map['enrollTime']['_seconds'], map['enrollTime']['_nanoseconds']).toDate();
     displayName = map['displayName'];
     realName = map['realName'];
+    accessibility = map['accessibility'];
     hasPhoto = map['hasPhoto'];
     notifyListeners();
   }
@@ -30,9 +32,10 @@ class Userdata extends ChangeNotifier {
     enrollTime = null;
     displayName = null;
     realName = null;
+    accessibility = null;
     hasPhoto = null;
     userphoto = null;
-    // 使用者存在 Cloud Firestore 的 fcmToken 要移除
+    // TODO: 使用者存在 Cloud Firestore 的 fcmToken 要移除
     notifyListeners();
 
     return this;

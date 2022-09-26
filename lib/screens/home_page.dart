@@ -1,10 +1,10 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:hello_stranger/config/userdata.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 import '/components/widgets.dart';
@@ -201,7 +201,10 @@ class _HomePageState extends State<HomePage> {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => TouringPage(domain: scanData.code),
+                          builder: (context) => TouringPage(
+                            accessibility: Provider.of<Userdata>(context, listen: false).accessibility!,
+                            domain: scanData.code,
+                          ),
                         ),
                       );
                     }

@@ -13,8 +13,9 @@ import '/config/constants.dart';
 import '/utils/local_storage_communication.dart';
 
 class TouringPage extends StatefulWidget {
-  TouringPage({Key? key, this.domain}) : super(key: key);
+  TouringPage({Key? key, required this.accessibility, this.domain}) : super(key: key);
 
+  final bool accessibility;
   final String? domain;
   final ble = FlutterReactiveBle();
   final playerModel = PlayerModel();

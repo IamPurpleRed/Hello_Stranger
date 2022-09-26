@@ -245,6 +245,7 @@ class _EnrollPageState extends State<EnrollPage> {
         'phone': getPhone(),
         'displayName': widget.displayNameController.text,
         'realName': widget.realNameController.text,
+        'accessibility': false, // TODO: 需新增一個 checkbox
         'fcmToken': await getFcmToken(),
         'hasPhoto': (userphoto != null),
       });
