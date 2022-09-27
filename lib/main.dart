@@ -11,6 +11,7 @@ import '/config/palette.dart';
 import '/config/userdata.dart';
 import '/screens/enroll_page.dart';
 import '/screens/login_page.dart';
+import '/screens/touring_page.dart';
 import '/utils/firebase_communication.dart';
 import '/utils/local_storage_communication.dart';
 
@@ -23,7 +24,7 @@ Future<void> main() async {
   await firebaseInit();
 
   await historyFileCheck();
-  Map<String, dynamic>? userdataMap;
+  Map? userdataMap;
   File? userphotoFile = await getUserphoto();
   if (getFirebaseAuthInstance().currentUser != null) {
     try {
@@ -108,6 +109,9 @@ class HelloStranger extends StatelessWidget {
         '/login': (context) => LoginPage(),
         '/enroll': (context) => EnrollPage(),
         '/main': (context) => const MainFrame(),
+        '/main/touring': (context) => TouringPage(
+              accessibility: Provider.of<Userdata>(context, listen: false).accessibility!,
+            ),
       },
     );
   }

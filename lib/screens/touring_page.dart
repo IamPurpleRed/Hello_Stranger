@@ -10,6 +10,7 @@ import 'package:wakelock/wakelock.dart';
 import '/components/device_type.dart';
 import '/components/player/player_model.dart';
 import '/config/constants.dart';
+import '/config/palette.dart';
 import '/utils/local_storage_communication.dart';
 
 class TouringPage extends StatefulWidget {
@@ -56,7 +57,7 @@ class _TouringPageState extends State<TouringPage> {
       if (device.name.contains('HS-') && device.name.length == 15 && device.rssi >= -50) {
         await scanStreamSub!.cancel();
         setState(() {
-          hintText = '偵測到裝置，讀取資料中...';
+          hintText = '偵測到裝置\n讀取資料中...';
           scanStreamSub = null;
           uniqueId = device.name.substring(3);
         });
@@ -75,7 +76,7 @@ class _TouringPageState extends State<TouringPage> {
         });
         if (configRes.data['code'] == 1) {
           setState(() {
-            hintText = '雲端函式發生錯誤，請離開導覽模式';
+            hintText = '雲端函式發生錯誤\n請離開導覽模式';
             uniqueId = null;
           });
           return;
@@ -127,7 +128,7 @@ class _TouringPageState extends State<TouringPage> {
       }
     } catch (e) {
       setState(() {
-        hintText = '網路連線不穩定，請重新掃描';
+        hintText = '網路連線不穩定\n請重新掃描';
       });
     }
   }
@@ -142,8 +143,8 @@ class _TouringPageState extends State<TouringPage> {
         return false;
       },
       child: Scaffold(
-        body: (type == null) ? noResultArea(vw) : resultArea(vw, vh),
-        floatingActionButton: (href == null)
+        body: (type == null) ? noResultArea(vw, vh) : resultArea(vw, vh),
+        floatingActionButton: (widget.accessibility || href == null)
             ? null
             : Padding(
                 padding: EdgeInsets.only(top: vh * 0.3),
@@ -157,19 +158,26 @@ class _TouringPageState extends State<TouringPage> {
     );
   }
 
-  Widget noResultArea(double vw) {
-    return Column(
-      children: [
-        const Expanded(child: SizedBox()),
-        Text(
-          hintText,
-          style: const TextStyle(fontSize: Constants.defaultTextSize),
-        ),
-        const Expanded(child: SizedBox()),
-        buttons(vw),
-        const SizedBox(height: 15.0),
-      ],
-    );
+  Widget noResultArea(double vw, double vh) {
+    return widget.accessibility
+        ? Column(
+            children: [
+              Expanded(child: FittedBox(child: Text(hintText))),
+              accessibilityButtons(vh),
+            ],
+          )
+        : Column(
+            children: [
+              const Expanded(child: SizedBox()),
+              Text(
+                hintText,
+                style: const TextStyle(fontSize: Constants.defaultTextSize),
+              ),
+              const Expanded(child: SizedBox()),
+              buttons(vw),
+              const SizedBox(height: 15.0),
+            ],
+          );
   }
 
   Widget resultArea(vw, vh) {
@@ -178,6 +186,7 @@ class _TouringPageState extends State<TouringPage> {
       colChildren = typeA(
         vw: vw,
         vh: vh,
+        accessibility: widget.accessibility,
         playerModel: widget.playerModel,
         uniqueId: uniqueId!,
         title: title!,
@@ -186,9 +195,14 @@ class _TouringPageState extends State<TouringPage> {
         audioRef: audioRef,
       );
     }
-    colChildren.add(const SizedBox(height: 15.0));
-    colChildren.add(buttons(vw));
-    colChildren.add(const SizedBox(height: 15.0));
+
+    if (widget.accessibility) {
+      colChildren.add(accessibilityButtons(vh));
+    } else {
+      colChildren.add(const SizedBox(height: 15.0));
+      colChildren.add(buttons(vw));
+      colChildren.add(const SizedBox(height: 15.0));
+    }
 
     return Column(children: colChildren);
   }
@@ -231,6 +245,59 @@ class _TouringPageState extends State<TouringPage> {
                 style: TextStyle(fontSize: Constants.defaultTextSize),
               ),
               onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  SizedBox accessibilityButtons(double vh) {
+    return SizedBox(
+      height: vh * 0.3,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: (uniqueId != null)
+                ? Container(
+                    color: Palette.secondaryColor,
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          hintText = '掃描中...';
+                          uniqueId = null;
+                          dt = null;
+                          type = null;
+                          title = null;
+                          content = null;
+                          href = null;
+                          photoRef = null;
+                        });
+                        startScanning();
+                      },
+                      child: const FittedBox(
+                        child: Text(
+                          '繼續\n掃描',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  )
+                : const SizedBox(),
+          ),
+          Expanded(
+            child: Container(
+              color: Colors.red,
+              child: InkWell(
+                child: const FittedBox(
+                  child: Text(
+                    '停止\n導覽',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+                onTap: () => Navigator.pop(context),
+              ),
             ),
           ),
         ],
