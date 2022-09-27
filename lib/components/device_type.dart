@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:hello_stranger/components/player/accessibility_player.dart';
 import 'package:provider/provider.dart';
 
+import '/components/player/accessibility_player.dart';
 import '/components/player/player.dart';
 import '/components/player/player_model.dart';
 import '/config/constants.dart';
@@ -98,5 +98,60 @@ List<Widget> typeA({
         ),
       ),
     ];
+  }
+}
+
+List<Widget> typeB({
+  required double vw,
+  required double vh,
+  required bool accessibility,
+  required String title,
+  String? photoRef,
+}) {
+  if (accessibility) {
+    return [
+      Expanded(
+        child: FittedBox(
+          child: Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+      ),
+      SizedBox(
+        height: vh * 0.3,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Container(
+                color: Colors.green[400],
+                child: const FittedBox(
+                  child: Text(
+                    '苓雅一路\n號誌',
+                    style: TextStyle(color: Colors.white),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Container(
+                color: Colors.green[600],
+                child: const FittedBox(
+                  child: Text(
+                    '文橫二路\n號誌',
+                    style: TextStyle(color: Colors.white),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ];
+  } else {
+    return [];
   }
 }

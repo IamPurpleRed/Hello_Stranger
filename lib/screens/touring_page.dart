@@ -26,10 +26,10 @@ class TouringPage extends StatefulWidget {
 
 class _TouringPageState extends State<TouringPage> {
   String hintText = '掃描中...';
-  bool isWorking = true; // 若為 true，將不能點擊繼續掃描按鈕
+  bool isWorking = false; // 若為 true，將不能點擊繼續掃描按鈕
   StreamSubscription<DiscoveredDevice>? scanStreamSub;
   String? uniqueId;
-  String? type;
+  String? type = 'B';
   String? title; // type A
   String? content; // type A
   String? href; // type A
@@ -41,7 +41,7 @@ class _TouringPageState extends State<TouringPage> {
   void initState() {
     super.initState();
     Wakelock.enable();
-    startScanning();
+    //startScanning();
   }
 
   @override
@@ -197,6 +197,13 @@ class _TouringPageState extends State<TouringPage> {
         content: content,
         photoRef: photoRef,
         audioRef: audioRef,
+      );
+    } else if (type == 'B') {
+      colChildren = typeB(
+        vw: vw,
+        vh: vh,
+        accessibility: widget.accessibility,
+        title: '苓雅一路/\n文橫二路路口',
       );
     }
 
