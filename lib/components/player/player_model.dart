@@ -17,9 +17,12 @@ class PlayerModel extends ChangeNotifier {
 
   Future<void> init(String uniqueId, String audioRef) async {
     player = AudioPlayer();
-    File audio = await downloadDeviceAudio(uniqueId, audioRef);
-    await player!.setFilePath(audio.path);
-    total = player!.duration!;
+
+    try {
+      File audio = await downloadDeviceAudio(uniqueId, audioRef);
+      await player!.setFilePath(audio.path);
+      total = player!.duration!;
+    } catch (e) {}
 
     stateStreamSub = player!.playerStateStream.listen((playerState) {
       final processingState = playerState.processingState;

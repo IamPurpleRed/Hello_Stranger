@@ -19,7 +19,6 @@ class TouringPage extends StatefulWidget {
   final bool accessibility;
   final String? domain;
   final ble = FlutterReactiveBle();
-  final playerModel = PlayerModel();
 
   @override
   State<TouringPage> createState() => _TouringPageState();
@@ -27,15 +26,16 @@ class TouringPage extends StatefulWidget {
 
 class _TouringPageState extends State<TouringPage> {
   String hintText = '掃描中...';
+  bool isWorking = true; // 若為 true，將不能點擊繼續掃描按鈕
   StreamSubscription<DiscoveredDevice>? scanStreamSub;
   String? uniqueId;
-  DateTime? dt;
   String? type;
   String? title; // type A
   String? content; // type A
   String? href; // type A
   String? photoRef; // type A
   String? audioRef; // type A
+  PlayerModel? playerModel;
 
   @override
   void initState() {
@@ -48,7 +48,7 @@ class _TouringPageState extends State<TouringPage> {
   void dispose() {
     Wakelock.disable();
     scanStreamSub = null;
-    widget.playerModel.dispose();
+    if (playerModel != null) playerModel!.dispose();
     super.dispose();
   }
 
@@ -77,6 +77,7 @@ class _TouringPageState extends State<TouringPage> {
         if (configRes.data['code'] == 1) {
           setState(() {
             hintText = '雲端函式發生錯誤\n請離開導覽模式';
+            isWorking = false;
             uniqueId = null;
           });
           return;
@@ -94,7 +95,7 @@ class _TouringPageState extends State<TouringPage> {
         config = configRes.data;
       }
 
-      /* INFO: 檢查歷史足跡是否有相同 id 之資料，若有則需刪除 */
+      /* INFO: 檢查歷史足跡是否有相同 id 之資料，若有則需將較舊的刪除 */
       List historyList = await getHistoryList();
       for (var item in historyList) {
         if (item['uniqueId'] == uniqueId) {
@@ -109,14 +110,16 @@ class _TouringPageState extends State<TouringPage> {
       historyList.add(config);
       updateHistoryFile(historyList);
 
+      /* INFO: 顯示結果 */
       if (config['type'] == 'A') {
         setState(() {
-          dt = DateTime.parse(config['datetime']);
+          isWorking = false;
           title = config['title'];
           content = config['content'];
           href = (config['href'] == '') ? null : config['href'];
           photoRef = (config['photoRef'] == '') ? null : config['photoRef'];
           audioRef = (config['audioRef'] == '') ? null : config['audioRef'];
+          playerModel = (config['audioRef'] == '') ? null : PlayerModel();
           type = 'A';
         });
       } else {
@@ -128,7 +131,8 @@ class _TouringPageState extends State<TouringPage> {
       }
     } catch (e) {
       setState(() {
-        hintText = '網路連線不穩定\n請重新掃描';
+        hintText = '發生錯誤\n可能是網路連線不穩定\n請重新掃描';
+        isWorking = false;
       });
     }
   }
@@ -187,7 +191,7 @@ class _TouringPageState extends State<TouringPage> {
         vw: vw,
         vh: vh,
         accessibility: widget.accessibility,
-        playerModel: widget.playerModel,
+        playerModel: playerModel!,
         uniqueId: uniqueId!,
         title: title!,
         content: content,
@@ -216,18 +220,20 @@ class _TouringPageState extends State<TouringPage> {
           SizedBox(
             width: vw * 0.38,
             child: ElevatedButton(
-              onPressed: (uniqueId == null)
+              onPressed: isWorking
                   ? null
                   : () {
                       setState(() {
                         hintText = '掃描中...';
+                        isWorking = true;
                         uniqueId = null;
-                        dt = null;
                         type = null;
                         title = null;
                         content = null;
                         href = null;
                         photoRef = null;
+                        audioRef = null;
+                        playerModel = null;
                       });
                       startScanning();
                     },
@@ -259,20 +265,23 @@ class _TouringPageState extends State<TouringPage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
-            child: (uniqueId != null)
-                ? Container(
+            child: isWorking
+                ? const SizedBox()
+                : Container(
                     color: Palette.secondaryColor,
                     child: InkWell(
                       onTap: () {
                         setState(() {
                           hintText = '掃描中...';
+                          isWorking = true;
                           uniqueId = null;
-                          dt = null;
                           type = null;
                           title = null;
                           content = null;
                           href = null;
                           photoRef = null;
+                          audioRef = null;
+                          playerModel = null;
                         });
                         startScanning();
                       },
@@ -283,8 +292,7 @@ class _TouringPageState extends State<TouringPage> {
                         ),
                       ),
                     ),
-                  )
-                : const SizedBox(),
+                  ),
           ),
           Expanded(
             child: Container(
