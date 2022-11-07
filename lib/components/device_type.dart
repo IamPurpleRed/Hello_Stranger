@@ -5,6 +5,7 @@ import '/components/player/accessibility_player.dart';
 import '/components/player/player.dart';
 import '/components/player/player_model.dart';
 import '/config/constants.dart';
+import '/config/palette.dart';
 import '/utils/local_storage_communication.dart';
 
 List<Widget> typeA({
@@ -21,15 +22,6 @@ List<Widget> typeA({
   if (accessibility) {
     return [
       Expanded(
-        child: FittedBox(
-          child: Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
-      ),
-      SizedBox(
-        height: vh * 0.3,
         child: (audioRef != null)
             ? ChangeNotifierProvider(
                 create: (context) {
@@ -38,7 +30,12 @@ List<Widget> typeA({
                 },
                 child: const AccessibilityPlayer(),
               )
-            : const SizedBox(),
+            : Ink(
+                color: Palette.primaryColor,
+                child: const FittedBox(
+                  child: Text('無音樂', style: TextStyle(color: Colors.white)),
+                ),
+              ),
       ),
     ];
   } else {
@@ -62,7 +59,7 @@ List<Widget> typeA({
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: vw * 0.08),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
                 title,

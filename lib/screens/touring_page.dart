@@ -29,7 +29,7 @@ class _TouringPageState extends State<TouringPage> {
   bool isWorking = false; // 若為 true，將不能點擊繼續掃描按鈕
   StreamSubscription<DiscoveredDevice>? scanStreamSub;
   String? uniqueId;
-  String? type = 'B';
+  String? type;
   String? title; // type A
   String? content; // type A
   String? href; // type A
@@ -41,7 +41,7 @@ class _TouringPageState extends State<TouringPage> {
   void initState() {
     super.initState();
     Wakelock.enable();
-    //startScanning();
+    startScanning();
   }
 
   @override
@@ -115,7 +115,7 @@ class _TouringPageState extends State<TouringPage> {
         setState(() {
           isWorking = false;
           title = config['title'];
-          content = config['content'];
+          content = (config['content'] == '') ? null : config['content'];
           href = (config['href'] == '') ? null : config['href'];
           photoRef = (config['photoRef'] == '') ? null : config['photoRef'];
           audioRef = (config['audioRef'] == '') ? null : config['audioRef'];
@@ -147,11 +147,13 @@ class _TouringPageState extends State<TouringPage> {
         return false;
       },
       child: Scaffold(
-        body: (type == null) ? noResultArea(vw, vh) : resultArea(vw, vh),
+        body: SafeArea(
+          child: (type == null) ? noResultArea(vw, vh) : resultArea(vw, vh),
+        ),
         floatingActionButton: (widget.accessibility || href == null)
             ? null
             : Padding(
-                padding: EdgeInsets.only(top: vh * 0.3),
+                padding: EdgeInsets.only(top: vh * 0.35),
                 child: FloatingActionButton(
                   child: const Icon(Icons.launch, color: Colors.white),
                   onPressed: () => launchUrl(Uri.parse(href!), mode: LaunchMode.externalApplication),
@@ -265,57 +267,36 @@ class _TouringPageState extends State<TouringPage> {
     );
   }
 
-  SizedBox accessibilityButtons(double vh) {
-    return SizedBox(
-      height: vh * 0.3,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            child: isWorking
-                ? const SizedBox()
-                : Container(
-                    color: Palette.secondaryColor,
-                    child: InkWell(
-                      onTap: () {
-                        setState(() {
-                          hintText = '掃描中...';
-                          isWorking = true;
-                          uniqueId = null;
-                          type = null;
-                          title = null;
-                          content = null;
-                          href = null;
-                          photoRef = null;
-                          audioRef = null;
-                          playerModel = null;
-                        });
-                        startScanning();
-                      },
-                      child: const FittedBox(
-                        child: Text(
-                          '繼續\n掃描',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ),
+  Ink accessibilityButtons(double vh) {
+    return Ink(
+      height: vh * 0.5,
+      color: Palette.secondaryColor,
+      child: GestureDetector(
+        onDoubleTap: isWorking
+            ? null
+            : () {
+                setState(() {
+                  hintText = '掃描中...';
+                  isWorking = true;
+                  uniqueId = null;
+                  type = null;
+                  title = null;
+                  content = null;
+                  href = null;
+                  photoRef = null;
+                  audioRef = null;
+                  playerModel = null;
+                });
+                startScanning();
+              },
+        onLongPress: () => Navigator.pop(context),
+        child: const FittedBox(
+          child: Text(
+            '繼續掃描\n/\n停止導覽',
+            style: TextStyle(color: Colors.white),
+            textAlign: TextAlign.center,
           ),
-          Expanded(
-            child: Container(
-              color: Colors.red,
-              child: InkWell(
-                child: const FittedBox(
-                  child: Text(
-                    '停止\n導覽',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-                onTap: () => Navigator.pop(context),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -12,49 +12,32 @@ class AccessibilityPlayer extends StatelessWidget {
     return Consumer<PlayerModel>(
       builder: (context, model, child) {
         if (model.state == PlayerState.loading) {
-          return const FittedBox(
-            child: Text('音檔載入中...'),
+          return Ink(
+            color: Palette.primaryColor,
+            child: const FittedBox(
+              child: Text('音檔載入中...'),
+            ),
           );
         } else {
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: (model.state == PlayerState.paused)
-                    ? Container(
-                        color: Colors.green,
-                        child: InkWell(
-                          onTap: () => model.player!.play(),
-                          child: const FittedBox(
-                            child: Icon(Icons.play_arrow, color: Colors.white),
-                          ),
-                        ),
-                      )
-                    : Container(
-                        color: Palette.primaryColor,
-                        child: InkWell(
-                          onTap: () => model.player!.pause(),
-                          child: const FittedBox(
-                            child: Icon(Icons.pause, color: Colors.white),
-                          ),
-                        ),
-                      ),
-              ),
-              Expanded(
-                child: Container(
-                  color: Colors.purple,
-                  child: InkWell(
-                    onTap: () {
-                      model.player!.pause();
-                      model.player!.seek(Duration.zero);
-                    },
-                    child: const FittedBox(
-                      child: Icon(Icons.stop, color: Colors.white),
-                    ),
-                  ),
+          return Ink(
+            color: Palette.primaryColor,
+            child: GestureDetector(
+              onDoubleTap: (model.state == PlayerState.paused) ? () => model.player!.play() : () => model.player!.pause(),
+              onLongPress: () {
+                model.player!.pause();
+                model.player!.seek(Duration.zero);
+              },
+              child: FittedBox(
+                child: Row(
+                  children: [
+                    if (model.state == PlayerState.paused) const Icon(Icons.play_arrow, color: Colors.white),
+                    if (model.state != PlayerState.paused) const Icon(Icons.pause, color: Colors.white),
+                    const Text('/', style: TextStyle(color: Colors.white)),
+                    const Icon(Icons.stop, color: Colors.white),
+                  ],
                 ),
               ),
-            ],
+            ),
           );
         }
       },
