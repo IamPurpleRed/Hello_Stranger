@@ -25,7 +25,7 @@ Future<void> main() async {
 
   await historyFileCheck();
   Map? userdataMap;
-  File? userphotoFile = await getUserphoto();
+  File? userphotoFile;
   if (getFirebaseAuthInstance().currentUser != null) {
     try {
       final loginRes = await FirebaseFunctions.instanceFor(region: 'asia-east1').httpsCallable('login').call({
@@ -38,6 +38,7 @@ Future<void> main() async {
         await getFirebaseAuthInstance().signOut();
       } else {
         userdataMap = loginRes.data['userdata'];
+        userphotoFile = await getUserphoto();
       }
     } catch (e) {
       // TODO: show AlertDialog & exit App

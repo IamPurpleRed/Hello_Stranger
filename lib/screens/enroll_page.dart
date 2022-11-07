@@ -32,6 +32,7 @@ class EnrollPage extends StatefulWidget {
 
 class _EnrollPageState extends State<EnrollPage> {
   File? userphoto;
+  bool accessibility = false;
 
   @override
   Widget build(BuildContext context) {
@@ -212,6 +213,20 @@ class _EnrollPageState extends State<EnrollPage> {
             ),
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10.0),
+          child: Row(
+            children: [
+              Checkbox(
+                value: accessibility,
+                onChanged: (value) {
+                  setState(() => accessibility = value!);
+                },
+              ),
+              const Text('視障人士介面', style: TextStyle(fontSize: Constants.defaultTextSize)),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -245,7 +260,7 @@ class _EnrollPageState extends State<EnrollPage> {
         'phone': getPhone(),
         'displayName': widget.displayNameController.text,
         'realName': widget.realNameController.text,
-        'accessibility': false, // TODO: 需新增一個 checkbox
+        'accessibility': accessibility,
         'fcmToken': await getFcmToken(),
         'hasPhoto': (userphoto != null),
       });

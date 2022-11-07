@@ -9,30 +9,30 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  audio_video_progress_bar: ^0.10.0 # 音樂播放進度條
+  audio_video_progress_bar: ^0.11.0 # 音樂播放進度條
   auto_size_text: ^3.0.0 # 自動調整字體大小
-  cloud_firestore: ^3.4.8 # Firebase Firestore Database
-  cloud_functions: ^3.3.7 # Firebase Cloud Functions
+  cloud_firestore: ^4.0.4 # Firebase Firestore Database
+  cloud_functions: ^4.0.3 # Firebase Cloud Functions
   cupertino_icons: ^1.0.5
   dio: ^4.0.6
-  firebase_analytics: ^9.3.5
-  firebase_auth: ^3.9.0 # Firebase Authentication
-  firebase_core: ^1.22.0
-  firebase_messaging: ^13.0.2 # Firebase Cloud Messaging
-  firebase_storage: ^10.3.8 # Firebase Cloud Storage
+  firebase_analytics: ^10.0.4
+  firebase_auth: ^4.1.1 # Firebase Authentication
+  firebase_core: ^2.1.1
+  firebase_messaging: ^14.0.4 # Firebase Cloud Messaging
+  firebase_storage: ^11.0.4 # Firebase Cloud Storage
   flutter_spinkit: ^5.1.0 # 按鈕載入動畫
   flutter_reactive_ble: ^5.0.2
-  fluttertoast: ^8.0.9 # toast
-  image_cropper: ^3.0.0 # 照片裁剪
-  image_picker: ^0.8.5+3 # 照片選擇
-  just_audio: ^0.9.29 # 音樂播放器
-  package_info_plus: ^1.4.3+1 # 取得版本號
+  fluttertoast: ^8.1.1 # toast
+  image_cropper: ^3.0.1 # 照片裁剪
+  image_picker: ^0.8.6 # 照片選擇
+  just_audio: ^0.9.30 # 音樂播放器
+  package_info_plus: ^3.0.1 # 取得版本號
   path_provider: ^2.0.11 # 本地檔案讀寫
   pin_code_fields: ^7.4.0 # 手機認證碼區塊
-  permission_handler: ^10.0.0 # 權限請求
-  provider: ^6.0.3
+  permission_handler: ^10.2.0 # 權限請求
+  provider: ^6.0.4
   qr_code_scanner: ^1.0.1
-  url_launcher: ^6.1.5 # 使用瀏覽器開啟網頁
+  url_launcher: ^6.1.6 # 使用瀏覽器開啟網頁
   wakelock: ^0.6.2 # 保持螢幕開啟
 
 
