@@ -193,12 +193,12 @@ class _TouringPageState extends State<TouringPage> {
         vw: vw,
         vh: vh,
         accessibility: widget.accessibility,
-        playerModel: playerModel!,
         uniqueId: uniqueId!,
         title: title!,
         content: content,
         photoRef: photoRef,
         audioRef: audioRef,
+        playerModel: playerModel,
       );
     } else if (type == 'B') {
       colChildren = typeB(

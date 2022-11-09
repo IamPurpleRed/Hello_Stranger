@@ -12,12 +12,12 @@ List<Widget> typeA({
   required double vw,
   required double vh,
   required bool accessibility,
-  required PlayerModel playerModel,
   required String uniqueId,
   required String title,
   String? content,
   String? photoRef,
   String? audioRef,
+  PlayerModel? playerModel,
 }) {
   if (accessibility) {
     return [
@@ -25,7 +25,7 @@ List<Widget> typeA({
         child: (audioRef != null)
             ? ChangeNotifierProvider(
                 create: (context) {
-                  playerModel.init(uniqueId, audioRef);
+                  playerModel!.init(uniqueId, audioRef);
                   return playerModel;
                 },
                 child: const AccessibilityPlayer(),
@@ -85,7 +85,7 @@ List<Widget> typeA({
               if (audioRef != null)
                 ChangeNotifierProvider(
                   create: (context) {
-                    playerModel.init(uniqueId, audioRef);
+                    playerModel!.init(uniqueId, audioRef);
                     return playerModel;
                   },
                   child: const Player(),
