@@ -56,6 +56,18 @@ Future<void> deleteDirectory(String path) async {
   if (dir.existsSync()) await dir.delete(recursive: true);
 }
 
+/* INFO: 刪除所有檔案 (登出) */
+Future<void> deleteAllFile() async {
+  File f = File('${(await getAppDir()).path}/history.json');
+  await f.writeAsString('[]');
+
+  f = File('${(await getAppDir()).path}/userphoto.jpg');
+  if (f.existsSync()) await f.delete();
+
+  Directory d = Directory('${(await getAppDir()).path}/history');
+  if (d.existsSync()) await d.delete(recursive: true);
+}
+
 /* INFO: 在一般導覽模式下，根據 photoRef 取得掃描到裝置之圖片 */
 /* NOTE: type A */
 Future<Image> downloadDeviceImage(String uniqueId, String photoRef) async {
