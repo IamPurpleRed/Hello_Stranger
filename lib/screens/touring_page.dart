@@ -26,7 +26,7 @@ class TouringPage extends StatefulWidget {
 
 class _TouringPageState extends State<TouringPage> {
   String hintText = '掃描中...';
-  bool isWorking = false; // 若為 true，將不能點擊繼續掃描按鈕
+  bool isWorking = true; // 若為 true，將不能點擊繼續掃描按鈕
   StreamSubscription<DiscoveredDevice>? scanStreamSub;
   String? uniqueId;
   String? type;
@@ -54,7 +54,7 @@ class _TouringPageState extends State<TouringPage> {
 
   void startScanning() async {
     scanStreamSub = widget.ble.scanForDevices(withServices: [], scanMode: ScanMode.lowLatency).listen((device) async {
-      if (device.name.contains('HS-') && device.name.length == 15 && device.rssi >= -50) {
+      if (device.name.contains('HS-') && device.name.length == 15 && device.rssi >= -55) {
         await scanStreamSub!.cancel();
         setState(() {
           hintText = '偵測到裝置\n讀取資料中...';

@@ -7,26 +7,18 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:778842234031:android:82d1b7d54fc0c96116485a",
+        "mobilesdk_app_id": "1:778842234031:android:7aacee610039028416485a",
         "android_client_info": {
-          "package_name": "com.purplered.hello_stranger"
+          "package_name": "com.purplered.helloStranger"
         }
       },
       "oauth_client": [
         {
-          "client_id": "778842234031-f90m5au46sjct7qki5a9f3ae9ro09i0l.apps.googleusercontent.com",
+          "client_id": "778842234031-tr629k07givfgkll8lv4cfqevipa8a93.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.purplered.hello_stranger",
-            "certificate_hash": "e96806a2b6c1d8fb6edac468ea2c893b2702c09f"
-          }
-        },
-        {
-          "client_id": "778842234031-ml5cub97j1oj2ebck3t2qf0074esl9r5.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.purplered.hello_stranger",
-            "certificate_hash": "137600438d276d126c214f14969c12ec5dd14ff9"
+            "package_name": "com.purplered.helloStranger",
+            "certificate_hash": "efc3ce14eb8cf5f47eb0339ea11f3b0f7564c546"
           }
         },
         {

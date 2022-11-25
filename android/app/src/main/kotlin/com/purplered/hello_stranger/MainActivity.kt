@@ -1,4 +1,4 @@
-package com.purplered.hello_stranger
+package com.purplered.helloStranger
 
 import io.flutter.embedding.android.FlutterActivity
 

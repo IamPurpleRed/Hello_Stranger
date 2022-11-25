@@ -64,6 +64,7 @@ class HelloStranger extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Hello Stranger',
       theme: ThemeData(
         colorScheme: const ColorScheme.light().copyWith(
