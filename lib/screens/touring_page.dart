@@ -172,7 +172,7 @@ class _TouringPageState extends State<TouringPage> {
         ? Column(
             children: [
               Expanded(child: FittedBox(child: Text(hintText))),
-              accessibilityButtons(vh),
+              accessibilityButtons(vw, vh),
             ],
           )
         : Column(
@@ -213,7 +213,7 @@ class _TouringPageState extends State<TouringPage> {
     }
 
     if (widget.accessibility) {
-      colChildren.add(accessibilityButtons(vh));
+      colChildren.add(accessibilityButtons(vw, vh));
     } else {
       colChildren.add(const SizedBox(height: 15.0));
       colChildren.add(buttons(vw));
@@ -270,8 +270,9 @@ class _TouringPageState extends State<TouringPage> {
     );
   }
 
-  Ink accessibilityButtons(double vh) {
+  Ink accessibilityButtons(double vw, double vh) {
     return Ink(
+      width: vw,
       height: vh * 0.5,
       color: Palette.secondaryColor,
       child: GestureDetector(
