@@ -33,6 +33,7 @@ dependencies:
   permission_handler: ^10.2.0 # 權限請求
   provider: ^6.0.4
   qr_code_scanner: ^1.0.1
+  shared_preferences: ^2.0.15 # 儲存不需同步到雲端的值
   url_launcher: ^6.1.6 # 使用瀏覽器開啟網頁
   wakelock: ^0.6.2 # 保持螢幕開啟
 

@@ -6,8 +6,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hello_stranger/config/constants.dart';
 import 'package:hello_stranger/config/palette.dart';
-import 'package:hello_stranger/screens/login_page.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '/config/userdata.dart';
 
@@ -52,6 +52,15 @@ class MoreInfoPage extends StatelessWidget {
                     shape: const RoundedRectangleBorder(
                       side: BorderSide(color: Palette.dividerColor),
                     ),
+                    leading: const Icon(Icons.radar),
+                    title: const Text('搜尋靈敏度調整', style: TextStyle(fontSize: Constants.defaultTextSize)),
+                    dense: true,
+                    onTap: () => rssiDialog(context),
+                  ),
+                  ListTile(
+                    shape: const RoundedRectangleBorder(
+                      side: BorderSide(color: Palette.dividerColor),
+                    ),
                     leading: const Icon(Icons.logout),
                     title: const Text('登出', style: TextStyle(fontSize: Constants.defaultTextSize)),
                     dense: true,
@@ -66,6 +75,71 @@ class MoreInfoPage extends StatelessWidget {
     );
   }
 
+  void rssiDialog(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    double rssi = -prefs.getDouble('rssi')!;
+    Text title = const Text('搜尋靈敏度調整');
+    Widget content = StatefulBuilder(
+      builder: (BuildContext context, void Function(void Function()) setState) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('數值越低，手機需越接近裝置才搜尋的到'),
+            Slider(
+              value: rssi,
+              min: 30,
+              max: 70,
+              divisions: 8,
+              label: rssi.floor().toString(),
+              onChanged: (value) {
+                setState(() => rssi = value);
+              },
+            ),
+          ],
+        );
+      },
+    );
+    var dialog = (Platform.isAndroid)
+        ? AlertDialog(
+            title: title,
+            content: content,
+            actions: [
+              TextButton(
+                child: const Text('確啦'),
+                onPressed: () async {
+                  await prefs.setDouble('rssi', -rssi);
+                  Navigator.pop(context);
+                },
+              ),
+              TextButton(
+                child: const Text('先不要'),
+                onPressed: () => Navigator.pop(context),
+              )
+            ],
+          )
+        : CupertinoAlertDialog(
+            title: title,
+            content: content,
+            actions: [
+              TextButton(
+                child: const Text('確啦'),
+                onPressed: () async {
+                  await prefs.setDouble('rssi', -rssi);
+                  Navigator.pop(context);
+                },
+              ),
+              TextButton(
+                child: const Text('先不要'),
+                onPressed: () => Navigator.pop(context),
+              )
+            ],
+          );
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => dialog,
+    );
+  }
+
   void showLogoutDialog(BuildContext context) {
     String title = '即將登出';
     String content = '確定要登出嗎？將會清除所有資料';
@@ -73,7 +147,6 @@ class MoreInfoPage extends StatelessWidget {
         ? AlertDialog(
             title: Text(title),
             content: Text(content),
-            scrollable: true,
             actions: [
               TextButton(
                 child: const Text('確啦'),

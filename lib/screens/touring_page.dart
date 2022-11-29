@@ -4,6 +4,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wakelock/wakelock.dart';
 
@@ -53,8 +54,10 @@ class _TouringPageState extends State<TouringPage> {
   }
 
   void startScanning() async {
+    final prefs = await SharedPreferences.getInstance();
+    double rssi = prefs.getDouble('rssi')!;
     scanStreamSub = widget.ble.scanForDevices(withServices: [], scanMode: ScanMode.lowLatency).listen((device) async {
-      if (device.name.contains('HS-') && device.name.length == 15 && device.rssi >= -55) {
+      if (device.name.contains('HS-') && device.name.length == 15 && device.rssi >= rssi) {
         await scanStreamSub!.cancel();
         setState(() {
           hintText = '偵測到裝置\n讀取資料中...';

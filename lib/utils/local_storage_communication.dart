@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /* NOTE: 
     - download -> 下載並儲存
@@ -100,4 +101,12 @@ Future<File> downloadDeviceAudio(String uniqueId, String audioRef) async {
   await mp3.writeAsBytes(res.data!);
 
   return mp3;
+}
+
+/* INFO: 確認所有 SharedPreferences 變數有沒有被設定 */
+Future<void> checkSharedPreferencesVars() async {
+  final prefs = await SharedPreferences.getInstance();
+  if (prefs.getDouble('rssi') == null) {
+    await prefs.setDouble('rssi', -55.0);
+  }
 }

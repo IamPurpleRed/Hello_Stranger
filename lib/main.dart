@@ -24,6 +24,7 @@ Future<void> main() async {
   await firebaseInit();
 
   await historyFileCheck();
+  await checkSharedPreferencesVars();
   Map? userdataMap;
   File? userphotoFile;
   if (getFirebaseAuthInstance().currentUser != null) {
