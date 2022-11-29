@@ -15,7 +15,7 @@ class AccessibilityPlayer extends StatelessWidget {
           return Ink(
             color: Palette.primaryColor,
             child: const FittedBox(
-              child: Text('音檔載入中...'),
+              child: Text('音檔載入中...', style: TextStyle(color: Colors.white)),
             ),
           );
         } else {

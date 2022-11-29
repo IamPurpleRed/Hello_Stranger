@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:hello_stranger/config/userdata.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -84,7 +85,7 @@ class _HomePageState extends State<HomePage> {
                       Widgets.alertDialog(
                         context,
                         title: '無法進入導覽模式',
-                        content: '請至設定允許 Hello Stranger 相關權限，才能開始使用喔',
+                        content: '請確認藍芽是否有開啟，並前往設定查看是否允許 Hello Stranger 相關權限',
                       );
                       return;
                     } else {
@@ -118,7 +119,7 @@ class _HomePageState extends State<HomePage> {
                         Widgets.alertDialog(
                           context,
                           title: '無法進入導覽模式',
-                          content: '請至設定允許 Hello Stranger 相關權限，才能開始使用喔',
+                          content: '請確認藍芽是否有開啟，並前往設定查看是否允許 Hello Stranger 相關權限',
                         );
                         return;
                       } else {
@@ -141,11 +142,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<bool> permission() async {
+    if (!await FlutterBluePlus.instance.isOn) return false;
+
     if (Platform.isAndroid) {
       List<bool> status = [
         await Permission.bluetoothScan.status.isGranted,
         await Permission.bluetoothConnect.status.isGranted,
-        await Permission.location.status.isGranted,
       ];
 
       if (!status[0]) {
@@ -156,14 +158,10 @@ class _HomePageState extends State<HomePage> {
         status[1] = await Permission.bluetoothConnect.request().isGranted;
       }
 
-      if (!status[2]) {
-        status[2] = await Permission.location.request().isGranted;
-      }
-
-      return (status[0] && status[1] && status[2]) ? true : false;
+      return (status[0] && status[1]) ? true : false;
     } else {
       if (!await Permission.bluetooth.isGranted) {
-        (await Permission.bluetooth.request().isGranted) ? true : false;
+        return (await Permission.bluetooth.request().isGranted) ? true : false;
       }
 
       return true;
