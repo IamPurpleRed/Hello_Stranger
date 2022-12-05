@@ -47,6 +47,8 @@
 	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>Hello Stranger 需要相機權限以掃描 QR code</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Hello Stranger 不需要這個權限，是 Apple 叫我加的</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>這樣才能選擇您的酷照片啊</string>
 	<key>UIBackgroundModes</key>
@@ -61,13 +63,6 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>

@@ -41,6 +41,10 @@
 	<string>使用 Hello Stranger 時請務必保持藍芽開啟</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>使用 Hello Stranger 時請務必保持藍芽開啟</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Hello Stranger 需要相機權限以掃描 QR code</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Hello Stranger 不需要這個權限，是 Apple 叫我加的</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>這樣才能選擇您的酷照片啊</string>
 	<key>UIBackgroundModes</key>
@@ -69,7 +73,5 @@
 	<false/>
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>Hello Stranger 需要相機權限以掃描 QR code</string>
 </dict>
 </plist>
